@@ -42,3 +42,549 @@ body{background:#041d18;color:#f1f6ef}.main-area{background:#041d18}.sidebar{bac
 .prereq-node small { color:#a6c1b4; font-size:11px; }
 .prereq-current { border-color:#46dca9; background:#104538; }
 @media(max-width:720px) { .module-intro { flex-wrap:wrap; } .planner-hours { margin-left:auto; } }
+
+/* ==========================================================================
+   RICH MULTI-COLOUR VIBRANT MODERN DESIGN SYSTEM
+   ========================================================================== */
+
+:root {
+  --ink: #FFFFFF;
+  --muted: #C7D2FE;
+  --paper: #090C16;
+  --forest: #11162B;
+  --white: #182038;
+  --line: #2B375C;
+  --lime: #00F5A0;
+  --cyan: #00F0FF;
+  --pink: #FF3377;
+  --purple: #8B5CF6;
+  --amber: #FFB703;
+  --coral: #FF5A36;
+  --teal: #14B8A6;
+  --blue: #3B82F6;
+  --indigo: #6366F1;
+  --magenta: #D946EF;
+  --gold: #F59E0B;
+  --shadow: 0 20px 60px rgba(139, 92, 246, 0.25);
+}
+
+/* Base Body with Multi-Colour Mesh Gradient */
+body {
+  background: 
+    radial-gradient(circle at 8% 12%, rgba(139, 92, 246, 0.35), transparent 38%),
+    radial-gradient(circle at 92% 15%, rgba(6, 182, 212, 0.32), transparent 38%),
+    radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.22), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(249, 115, 22, 0.25), transparent 40%),
+    radial-gradient(circle at 12% 88%, rgba(16, 185, 129, 0.25), transparent 40%),
+    #080B14 !important;
+  color: #FFFFFF !important;
+}
+
+.main-area {
+  background: transparent !important;
+}
+
+/* Landing Page Multi-Colour Canvas */
+.landing-page {
+  background: 
+    radial-gradient(circle at 12% 14%, rgba(139, 92, 246, 0.4), transparent 40%),
+    radial-gradient(circle at 88% 16%, rgba(0, 240, 255, 0.35), transparent 40%),
+    radial-gradient(circle at 50% 55%, rgba(255, 51, 119, 0.28), transparent 48%),
+    radial-gradient(circle at 82% 85%, rgba(255, 122, 0, 0.26), transparent 40%),
+    radial-gradient(circle at 18% 85%, rgba(0, 245, 160, 0.26), transparent 40%),
+    #070A12 !important;
+  color: #FFFFFF !important;
+}
+
+/* Multi-Colour Glowing Orbits */
+.orbit-a {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 0 50px rgba(139, 92, 246, 0.2) !important;
+}
+.orbit-b {
+  border-color: rgba(6, 182, 212, 0.3) !important;
+  box-shadow: 0 0 50px rgba(6, 182, 212, 0.2) !important;
+}
+
+/* Navigation Bar */
+.landing-nav {
+  background: rgba(10, 14, 26, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.25) !important;
+}
+
+.landing-brand b {
+  background: linear-gradient(135deg, #00F0FF 0%, #8B5CF6 35%, #FF3377 70%, #FFA41B 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 900 !important;
+}
+
+.landing-brand span {
+  background: linear-gradient(135deg, #FF3377, #FF8C00) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 18px rgba(255, 51, 119, 0.45) !important;
+  border-radius: 12px !important;
+}
+
+/* Multi-Colour Iridescent Headings */
+.landing-hero h1 {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 25%, #38BDF8 50%, #A78BFA 75%, #F472B6 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 10px 30px rgba(56, 189, 248, 0.25)) !important;
+}
+
+.landing-hero h1 em {
+  background: linear-gradient(135deg, #FF3377 0%, #FF7A00 50%, #FFB703 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-style: normal !important;
+  display: inline-block !important;
+}
+
+/* Multi-Colour Gradient Action Buttons */
+.landing-primary,
+.button-primary,
+.landing-nav-cta {
+  background: linear-gradient(135deg, #FF3377 0%, #FF6B4A 45%, #FFA41B 100%) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 8px 30px rgba(255, 51, 119, 0.5) !important;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.landing-primary:hover,
+.button-primary:hover,
+.landing-nav-cta:hover {
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 14px 40px rgba(255, 107, 74, 0.7) !important;
+}
+
+.landing-secondary,
+.button-secondary {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.25)) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.6) !important;
+  color: #FFFFFF !important;
+  border-radius: 9999px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 25px rgba(56, 189, 248, 0.25) !important;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.landing-secondary:hover,
+.button-secondary:hover {
+  transform: translateY(-3px) scale(1.04) !important;
+  border-color: #EC4899 !important;
+  box-shadow: 0 12px 35px rgba(236, 72, 153, 0.45) !important;
+}
+
+/* Hero Diagram Visual Nodes (Spectrum) */
+.intelligence-core {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #FF6B4A 100%) !important;
+  box-shadow: 0 12px 45px rgba(236, 72, 153, 0.65), 0 0 35px rgba(139, 92, 246, 0.5) !important;
+  color: #FFFFFF !important;
+}
+
+.orbit-node.node-academic {
+  background: linear-gradient(135deg, #0284C7 0%, #06B6D4 100%) !important;
+  border: 1.5px solid #38BDF8 !important;
+  box-shadow: 0 8px 25px rgba(6, 182, 212, 0.45) !important;
+  color: #FFFFFF !important;
+}
+
+.orbit-node.node-ops {
+  background: linear-gradient(135deg, #EA580C 0%, #F59E0B 100%) !important;
+  border: 1.5px solid #FCD34D !important;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.45) !important;
+  color: #FFFFFF !important;
+}
+
+.orbit-node.node-trust {
+  background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%) !important;
+  border: 1.5px solid #C084FC !important;
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.45) !important;
+  color: #FFFFFF !important;
+}
+
+.orbit-node.node-assess {
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%) !important;
+  border: 1.5px solid #34D399 !important;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45) !important;
+  color: #FFFFFF !important;
+}
+
+/* Multi-Colour Problem Cards (Blue, Orange, Purple) */
+.problem-card:nth-child(1) {
+  background: linear-gradient(145deg, rgba(14, 165, 233, 0.16), rgba(15, 23, 42, 0.88)) !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
+  box-shadow: 0 12px 35px rgba(14, 165, 233, 0.15) !important;
+}
+.problem-card:nth-child(1) .problem-number,
+.problem-card:nth-child(1) .problem-mark {
+  color: #38BDF8 !important;
+}
+
+.problem-card:nth-child(2) {
+  background: linear-gradient(145deg, rgba(249, 115, 22, 0.16), rgba(15, 23, 42, 0.88)) !important;
+  border: 1px solid rgba(251, 146, 60, 0.45) !important;
+  box-shadow: 0 12px 35px rgba(249, 115, 22, 0.15) !important;
+}
+.problem-card:nth-child(2) .problem-number,
+.problem-card:nth-child(2) .problem-mark {
+  color: #FB923C !important;
+}
+
+.problem-card:nth-child(3) {
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.16), rgba(15, 23, 42, 0.88)) !important;
+  border: 1px solid rgba(192, 132, 252, 0.45) !important;
+  box-shadow: 0 12px 35px rgba(168, 85, 247, 0.15) !important;
+}
+.problem-card:nth-child(3) .problem-number,
+.problem-card:nth-child(3) .problem-mark {
+  color: #C084FC !important;
+}
+
+/* Loop Steps Multi-Colour Progression */
+.loop-steps > div:nth-child(1) {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(15, 23, 42, 0.8)) !important;
+  border: 1px solid rgba(6, 182, 212, 0.5) !important;
+}
+.loop-steps > div:nth-child(1) span { color: #22D3EE !important; }
+
+.loop-steps > div:nth-child(3) {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(15, 23, 42, 0.8)) !important;
+  border: 1px solid rgba(139, 92, 246, 0.5) !important;
+}
+.loop-steps > div:nth-child(3) span { color: #A78BFA !important; }
+
+.loop-steps > div:nth-child(5) {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(15, 23, 42, 0.8)) !important;
+  border: 1px solid rgba(236, 72, 153, 0.5) !important;
+}
+.loop-steps > div:nth-child(5) span { color: #F472B6 !important; }
+
+.loop-steps > div:nth-child(7) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(15, 23, 42, 0.8)) !important;
+  border: 1px solid rgba(16, 185, 129, 0.5) !important;
+}
+.loop-steps > div:nth-child(7) span { color: #34D399 !important; }
+
+/* Multi-Colour Portal Showcase Cards */
+.portal-card.student-portal {
+  background: linear-gradient(145deg, rgba(14, 165, 233, 0.18), rgba(15, 23, 42, 0.92)) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.55) !important;
+  box-shadow: 0 14px 45px rgba(14, 165, 233, 0.25) !important;
+}
+.portal-card.student-portal .portal-top { color: #38BDF8 !important; }
+.portal-card.student-portal .portal-preview { border-color: rgba(56, 189, 248, 0.3) !important; }
+.portal-card.student-portal button {
+  background: linear-gradient(135deg, #0284C7, #06B6D4) !important;
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4) !important;
+}
+
+.portal-card.professor-portal {
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.18), rgba(15, 23, 42, 0.92)) !important;
+  border: 1.5px solid rgba(192, 132, 252, 0.55) !important;
+  box-shadow: 0 14px 45px rgba(168, 85, 247, 0.25) !important;
+}
+.portal-card.professor-portal .portal-top { color: #C084FC !important; }
+.portal-card.professor-portal .portal-preview { border-color: rgba(192, 132, 252, 0.3) !important; }
+.portal-card.professor-portal button {
+  background: linear-gradient(135deg, #7C3AED, #C026D3) !important;
+  box-shadow: 0 6px 20px rgba(192, 38, 211, 0.4) !important;
+}
+
+.portal-card.admin-portal {
+  background: linear-gradient(145deg, rgba(249, 115, 22, 0.18), rgba(15, 23, 42, 0.92)) !important;
+  border: 1.5px solid rgba(251, 146, 60, 0.55) !important;
+  box-shadow: 0 14px 45px rgba(249, 115, 22, 0.25) !important;
+}
+.portal-card.admin-portal .portal-top { color: #FB923C !important; }
+.portal-card.admin-portal .portal-preview { border-color: rgba(251, 146, 60, 0.3) !important; }
+.portal-card.admin-portal button {
+  background: linear-gradient(135deg, #EA580C, #F59E0B) !important;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4) !important;
+}
+
+/* The 15 Module Tiles Spectrum (Cycling across Vibrant Gradients) */
+.module-tile:nth-child(5n+1) {
+  border-left: 3px solid #06B6D4 !important;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(18, 24, 43, 0.85)) !important;
+}
+.module-tile:nth-child(5n+1) span { color: #22D3EE !important; }
+
+.module-tile:nth-child(5n+2) {
+  border-left: 3px solid #8B5CF6 !important;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(18, 24, 43, 0.85)) !important;
+}
+.module-tile:nth-child(5n+2) span { color: #A78BFA !important; }
+
+.module-tile:nth-child(5n+3) {
+  border-left: 3px solid #EC4899 !important;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(18, 24, 43, 0.85)) !important;
+}
+.module-tile:nth-child(5n+3) span { color: #F472B6 !important; }
+
+.module-tile:nth-child(5n+4) {
+  border-left: 3px solid #F59E0B !important;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(18, 24, 43, 0.85)) !important;
+}
+.module-tile:nth-child(5n+4) span { color: #FCD34D !important; }
+
+.module-tile:nth-child(5n+5) {
+  border-left: 3px solid #10B981 !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(18, 24, 43, 0.85)) !important;
+}
+.module-tile:nth-child(5n+5) span { color: #34D399 !important; }
+
+.module-tile:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 12px 35px rgba(139, 92, 246, 0.25) !important;
+}
+
+/* Flow Nodes in Intelligence Section */
+.flow-center {
+  background: linear-gradient(135deg, #8B5CF6, #EC4899) !important;
+  box-shadow: 0 10px 35px rgba(236, 72, 153, 0.5) !important;
+}
+.flow-student {
+  background: linear-gradient(135deg, #0284C7, #06B6D4) !important;
+  border-color: #38BDF8 !important;
+}
+.flow-dkt {
+  background: linear-gradient(135deg, #7C3AED, #A855F7) !important;
+  border-color: #C084FC !important;
+}
+.flow-plan {
+  background: linear-gradient(135deg, #059669, #10B981) !important;
+  border-color: #34D399 !important;
+}
+.flow-prof {
+  background: linear-gradient(135deg, #D946EF, #EC4899) !important;
+  border-color: #F472B6 !important;
+}
+.flow-admin {
+  background: linear-gradient(135deg, #EA580C, #F59E0B) !important;
+  border-color: #FCD34D !important;
+}
+
+/* Multi-Colour Trust & Architecture Cards */
+.trust-grid article:nth-child(1) {
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.85)) !important;
+  border: 1px solid rgba(52, 211, 153, 0.4) !important;
+}
+.trust-grid article:nth-child(1) svg { color: #34D399 !important; }
+
+.trust-grid article:nth-child(2) {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.14), rgba(15, 23, 42, 0.85)) !important;
+  border: 1px solid rgba(96, 165, 250, 0.4) !important;
+}
+.trust-grid article:nth-child(2) svg { color: #60A5FA !important; }
+
+.trust-grid article:nth-child(3) {
+  background: linear-gradient(145deg, rgba(236, 72, 153, 0.14), rgba(15, 23, 42, 0.85)) !important;
+  border: 1px solid rgba(244, 114, 182, 0.4) !important;
+}
+.trust-grid article:nth-child(3) svg { color: #F472B6 !important; }
+
+/* Final CTA Section */
+.final-cta {
+  background: radial-gradient(ellipse at 50% 100%, rgba(139, 92, 246, 0.35), #080B14 70%) !important;
+  border-top: 1px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+/* ==========================================================================
+   APP SHELL & DASHBOARD MULTI-COLOUR STYLING
+   ========================================================================== */
+
+.sidebar {
+  background: rgba(13, 17, 32, 0.95) !important;
+  border-right: 1px solid rgba(139, 92, 246, 0.25) !important;
+  box-shadow: 10px 0 35px rgba(0, 0, 0, 0.4) !important;
+}
+
+.topbar {
+  background: rgba(14, 19, 36, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.25) !important;
+}
+
+.nav-link.nav-active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(6, 182, 212, 0.25)) !important;
+  color: #FFFFFF !important;
+  border-left: 3px solid #38BDF8 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 18px rgba(139, 92, 246, 0.25) !important;
+}
+
+/* Multi-Colour Dashboard Stat Cards */
+.stat-card:nth-child(1) {
+  background: linear-gradient(145deg, rgba(14, 165, 233, 0.16), rgba(18, 24, 43, 0.9)) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.18) !important;
+}
+.stat-card:nth-child(1) > strong { color: #38BDF8 !important; }
+
+.stat-card:nth-child(2) {
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.16), rgba(18, 24, 43, 0.9)) !important;
+  border: 1px solid rgba(52, 211, 153, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.18) !important;
+}
+.stat-card:nth-child(2) > strong { color: #34D399 !important; }
+
+.stat-card:nth-child(3) {
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.16), rgba(18, 24, 43, 0.9)) !important;
+  border: 1px solid rgba(252, 211, 77, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.18) !important;
+}
+.stat-card:nth-child(3) > strong { color: #FCD34D !important; }
+
+.stat-card:nth-child(4) {
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.16), rgba(18, 24, 43, 0.9)) !important;
+  border: 1px solid rgba(192, 132, 252, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(168, 85, 247, 0.18) !important;
+}
+.stat-card:nth-child(4) > strong { color: #C084FC !important; }
+
+/* Panels and Elevated Cards */
+.panel {
+  background: linear-gradient(145deg, rgba(22, 28, 50, 0.85), rgba(14, 18, 34, 0.9)) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35) !important;
+}
+
+.panel-head h2 {
+  background: linear-gradient(135deg, #FFFFFF, #E0E7FF) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Learning & Knowledge Banners */
+.learning-intro {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(236, 72, 153, 0.25), rgba(6, 182, 212, 0.3)) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.5) !important;
+  box-shadow: 0 14px 45px rgba(139, 92, 246, 0.25) !important;
+}
+
+.accreditation-banner {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(6, 182, 212, 0.3), rgba(139, 92, 246, 0.25)) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.5) !important;
+  box-shadow: 0 14px 45px rgba(16, 185, 129, 0.25) !important;
+}
+
+.opportunity-hero {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.35), rgba(236, 72, 153, 0.3), rgba(139, 92, 246, 0.25)) !important;
+  border: 1.5px solid rgba(251, 146, 60, 0.5) !important;
+  box-shadow: 0 14px 45px rgba(249, 115, 22, 0.25) !important;
+}
+
+.marketplace-intro {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2)) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.5) !important;
+  box-shadow: 0 14px 45px rgba(6, 182, 212, 0.25) !important;
+}
+
+/* Multi-Colour Badges & Pills */
+.badge-lime, .badge-green {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #34D399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2) !important;
+}
+
+.badge-amber, .badge-gold {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #FCD34D !important;
+  border: 1px solid rgba(252, 211, 77, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2) !important;
+}
+
+.badge-red, .badge-coral {
+  background: rgba(244, 63, 94, 0.2) !important;
+  color: #FDA4AF !important;
+  border: 1px solid rgba(251, 113, 133, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(244, 63, 94, 0.2) !important;
+}
+
+.badge-blue, .badge-cyan {
+  background: rgba(14, 165, 233, 0.2) !important;
+  color: #7DD3FC !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.2) !important;
+}
+
+.badge-purple, .badge-violet {
+  background: rgba(168, 85, 247, 0.2) !important;
+  color: #D8B4FE !important;
+  border: 1px solid rgba(192, 132, 252, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.2) !important;
+}
+
+/* Multi-Colour Attendance & Ticket Cards */
+.attendance-card {
+  background: linear-gradient(145deg, rgba(22, 28, 50, 0.85), rgba(15, 20, 36, 0.9)) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  border-left: 4px solid #38BDF8 !important;
+}
+
+.ticket-card {
+  background: linear-gradient(145deg, rgba(22, 28, 50, 0.85), rgba(15, 20, 36, 0.9)) !important;
+  border: 1px solid rgba(249, 115, 22, 0.35) !important;
+  border-left: 4px solid #FB923C !important;
+}
+
+.match-card {
+  background: linear-gradient(145deg, rgba(22, 28, 50, 0.85), rgba(15, 20, 36, 0.9)) !important;
+  border: 1px solid rgba(168, 85, 247, 0.35) !important;
+  border-left: 4px solid #C084FC !important;
+}
+
+.talent-card {
+  background: linear-gradient(145deg, rgba(22, 28, 50, 0.85), rgba(15, 20, 36, 0.9)) !important;
+  border: 1px solid rgba(236, 72, 153, 0.35) !important;
+  border-left: 4px solid #F472B6 !important;
+}
+
+/* Login Screen Multi-Colour Styling */
+.login-screen {
+  background: 
+    radial-gradient(circle at 10% 15%, rgba(139, 92, 246, 0.35), transparent 45%),
+    radial-gradient(circle at 90% 15%, rgba(0, 240, 255, 0.3), transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(255, 51, 119, 0.25), transparent 50%),
+    #080B14 !important;
+  color: #FFFFFF !important;
+}
+
+.login-card {
+  background: linear-gradient(145deg, rgba(24, 30, 54, 0.92), rgba(15, 20, 38, 0.96)) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.45) !important;
+  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.25), 0 0 30px rgba(6, 182, 212, 0.15) !important;
+}
+
+.role-picker button.role-picked {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(6, 182, 212, 0.25)) !important;
+  border-color: #38BDF8 !important;
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+}
+
+/* Animations */
+@keyframes floatGentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.4)); }
+  50% { filter: drop-shadow(0 0 25px rgba(236, 72, 153, 0.6)); }
+}
+
+.intelligence-core {
+  animation: pulseGlow 3s ease-in-out infinite !important;
+}
+
