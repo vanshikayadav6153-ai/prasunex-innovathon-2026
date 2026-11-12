@@ -1866,3 +1866,180 @@ a { color: inherit; text-decoration: none; }
   border-color: #F43F5E !important;
   box-shadow: 0 0 30px rgba(244, 63, 94, 0.35) !important;
 }
+
+/* ==========================================================================
+   NAVIGATION & LOGOUT CONTROLS (HOMEPAGE RETURN & SIGN OUT)
+   ========================================================================== */
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: #00F0FF !important;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.top-home-btn:hover {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: #00F0FF;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.top-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #FDA4AF !important;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.top-logout-btn:hover {
+  background: rgba(244, 63, 94, 0.25);
+  border-color: #F43F5E;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.45);
+  transform: translateY(-1px);
+}
+
+.brand-btn {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  width: 100%;
+}
+
+.side-home-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 14px 4px;
+  padding: 8px 12px;
+  background: rgba(0, 240, 255, 0.06);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: 8px;
+  color: #38BDF8 !important;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: calc(100% - 28px);
+}
+
+.side-home-btn:hover {
+  background: rgba(0, 240, 255, 0.16);
+  border-color: #00F0FF;
+  color: #00F0FF !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+}
+
+.logout-button-highlighted {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(244, 63, 94, 0.14);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #FDA4AF !important;
+  padding: 6px 11px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.logout-button-highlighted:hover {
+  background: rgba(244, 63, 94, 0.3);
+  border-color: #F43F5E;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
+}
+
+/* Landing Page Nav When Logged In */
+.landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.landing-console-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #00F0FF, #3B82F6);
+  color: #020617 !important;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+  transition: all 0.2s ease;
+}
+
+.landing-console-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.6);
+}
+
+.landing-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #FDA4AF !important;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.landing-logout-btn:hover {
+  background: rgba(244, 63, 94, 0.25);
+  border-color: #F43F5E;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.4);
+}
+
+.landing-logout-cta {
+  border-color: rgba(244, 63, 94, 0.4) !important;
+  color: #FDA4AF !important;
+}
+
+.landing-logout-cta:hover {
+  background: rgba(244, 63, 94, 0.2) !important;
+  color: #FFFFFF !important;
+  border-color: #F43F5E !important;
+}
+
