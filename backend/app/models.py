@@ -1,4 +1,7 @@
 from datetime import datetime, timezone
+from typing import Any
+import hashlib
+import json
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
@@ -34,7 +37,7 @@ class User(Base):
     email = Column(String(200), nullable=False, index=True)
     hashed_password = Column(String(256), nullable=False)
     full_name = Column(String(160), nullable=False)
-    role = Column(String(40), nullable=False)  # chancellor_dean, professor_hod, student, technician_warden, recruiter
+    role = Column(String(40), nullable=False)  # student, professor, hod, dean, technician, warden, admin, recruiter
     department = Column(String(80), nullable=False, default="CSE")
     semester = Column(Integer, nullable=False, default=5)
     cgpa = Column(Float, nullable=False, default=8.0)
@@ -54,7 +57,20 @@ class Course(Base):
     department = Column(String(80), nullable=False, default="CSE")
     semester = Column(Integer, nullable=False, default=5)
     professor_id = Column(String(64), ForeignKey("users.id"), nullable=True)
+    syllabus_text = Column(Text, nullable=True)
     co_po_config_json = Column(Text, nullable=False, default="{}")
+
+
+class CourseEnrollment(Base):
+    __tablename__ = "course_enrollments"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    course_id = Column(String(64), ForeignKey("courses.id"), nullable=False, index=True)
+    student_id = Column(String(64), ForeignKey("users.id"), nullable=False, index=True)
+    semester = Column(Integer, nullable=False, default=5)
+    attendance_percentage = Column(Float, nullable=False, default=80.0)
+    final_grade = Column(String(8), nullable=True)
 
 
 class ConceptNode(Base):
@@ -83,6 +99,8 @@ class AssessmentQuestion(Base):
     bloom_level = Column(String(16), nullable=False, default="L2")
     po_codes_json = Column(Text, nullable=False, default='["PO1","PO2"]')
     max_marks = Column(Float, nullable=False, default=10.0)
+    irt_b = Column(Float, nullable=False, default=0.0)  # difficulty
+    irt_a = Column(Float, nullable=False, default=1.0)  # discrimination
 
 
 class MarkRecord(Base):
@@ -96,6 +114,7 @@ class MarkRecord(Base):
     total_score = Column(Float, nullable=False, default=0.0)
     z_score = Column(Float, nullable=False, default=0.0)
     letter_grade = Column(String(8), nullable=False, default="B")
+    encrypted_marks = Column(Text, nullable=True)  # AES-256 encrypted marks for privacy
     created_at = Column(DateTime(timezone=True), default=utcnow)
 
 
@@ -142,6 +161,34 @@ class AttendanceRecord(Base):
     updated_at = Column(DateTime(timezone=True), default=utcnow)
 
 
+class TimetableEntry(Base):
+    __tablename__ = "timetables"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    course_id = Column(String(64), ForeignKey("courses.id"), nullable=False, index=True)
+    day_of_week = Column(String(16), nullable=False)  # Monday, Tuesday, ...
+    start_time = Column(String(10), nullable=False)   # 09:00
+    end_time = Column(String(10), nullable=False)     # 10:00
+    room = Column(String(64), nullable=False, default="Hall-A")
+    professor_id = Column(String(64), ForeignKey("users.id"), nullable=True)
+    is_cancelled = Column(Boolean, nullable=False, default=False)
+    rescheduled_info = Column(String(160), nullable=True)
+    updated_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class SyllabusTopic(Base):
+    __tablename__ = "syllabus_topics"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    course_id = Column(String(64), ForeignKey("courses.id"), nullable=False, index=True)
+    topic_title = Column(String(200), nullable=False)
+    order_index = Column(Integer, nullable=False, default=1)
+    is_covered = Column(Boolean, nullable=False, default=False)
+    covered_at = Column(DateTime(timezone=True), nullable=True)
+
+
 class MaintenanceTicket(Base):
     __tablename__ = "maintenance_tickets"
 
@@ -150,7 +197,7 @@ class MaintenanceTicket(Base):
     reporter_id = Column(String(64), ForeignKey("users.id"), nullable=False)
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=False)
-    location = Column(String(160), nullable=False, default="Main Lab Block")
+    location = Column(String(160), nullable=False, default="Lab 2 - Bench 14")
     photo_path = Column(String(300), nullable=True)
     vision_category = Column(String(64), nullable=False, default="general")
     vision_confidence = Column(Float, nullable=False, default=0.0)
@@ -158,13 +205,41 @@ class MaintenanceTicket(Base):
     merged_into_id = Column(String(64), nullable=True)
     merged_count = Column(Integer, nullable=False, default=1)
     assigned_to_id = Column(String(64), ForeignKey("users.id"), nullable=True)
-    priority = Column(String(24), nullable=False, default="Medium")
-    status = Column(String(32), nullable=False, default="Open")
+    priority = Column(String(24), nullable=False, default="Medium")  # Low, Medium, High, Critical
+    priority_weight = Column(Float, nullable=False, default=1.0)
+    status = Column(String(32), nullable=False, default="Ticket verified")  # Ticket verified -> Technician dispatched -> Component replaced -> Student sign-off
+    sla_category = Column(String(32), nullable=False, default="equipment")  # equipment (48h), hostel (24h)
     sla_deadline = Column(DateTime(timezone=True), nullable=False)
+    escalation_level = Column(Integer, nullable=False, default=0)  # 0=none, 1=HoD notified, 2=Dean notified
     resolution_notes = Column(Text, nullable=True)
     resolution_photo = Column(String(300), nullable=True)
     audit_ledger_json = Column(Text, nullable=False, default="[]")
     created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class TicketAuditLedger(Base):
+    __tablename__ = "ticket_audit_ledger"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    ticket_id = Column(String(64), ForeignKey("maintenance_tickets.id"), nullable=False, index=True)
+    action = Column(String(64), nullable=False)
+    actor_id = Column(String(64), nullable=True)
+    prev_hash = Column(String(64), nullable=False, default="0" * 64)
+    current_hash = Column(String(64), nullable=False)
+    payload_json = Column(Text, nullable=False)
+    timestamp = Column(DateTime(timezone=True), default=utcnow)
+
+    @classmethod
+    def compute_hash(cls, prev_hash: str, ticket_id: str, action: str, payload_json: str, ts: Any = None) -> str:
+        if isinstance(ts, datetime):
+            ts_str = ts.strftime("%Y-%m-%d %H:%M:%S")
+        elif ts is not None:
+            ts_str = str(ts)[:19].replace("T", " ")
+        else:
+            ts_str = ""
+        raw = f"{prev_hash}|{ticket_id}|{action}|{payload_json}|{ts_str}"
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 class ZKReport(Base):
@@ -177,6 +252,7 @@ class ZKReport(Base):
     encrypted_body = Column(Text, nullable=False)
     key_share_dean = Column(Text, nullable=False)
     key_share_icc = Column(Text, nullable=False)
+    nullifier_hash = Column(String(128), unique=True, nullable=True)
     status = Column(String(32), nullable=False, default="Submitted")
     thread_json = Column(Text, nullable=False, default="[]")
     created_at = Column(DateTime(timezone=True), default=utcnow)
@@ -202,6 +278,20 @@ class StudyMatch(Base):
     learner_id = Column(String(64), ForeignKey("users.id"), nullable=False)
     score = Column(Float, nullable=False, default=0.0)
     status = Column(String(24), nullable=False, default="Active")
+    tutor_confirmed = Column(Boolean, nullable=False, default=False)
+    learner_confirmed = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class SquadRequest(Base):
+    __tablename__ = "squad_requests"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    student_id = Column(String(64), ForeignKey("users.id"), nullable=False)
+    event_id = Column(String(64), nullable=False)
+    skills_json = Column(Text, nullable=False, default="[]")
+    preferred_role = Column(String(64), nullable=False)  # Frontend, Backend, ML, Design, Pitch
     created_at = Column(DateTime(timezone=True), default=utcnow)
 
 
@@ -218,6 +308,20 @@ class HackathonEvent(Base):
     teams_json = Column(Text, nullable=False, default="[]")
 
 
+class GatePass(Base):
+    __tablename__ = "gate_passes"
+
+    id = Column(String(64), primary_key=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    student_id = Column(String(64), ForeignKey("users.id"), nullable=False)
+    event_id = Column(String(64), ForeignKey("hackathon_events.id"), nullable=False)
+    token = Column(String(64), unique=True, nullable=False)
+    qr_code_svg = Column(Text, nullable=True)
+    is_used = Column(Boolean, nullable=False, default=False)
+    used_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
 class RecruiterInvite(Base):
     __tablename__ = "recruiter_invites"
 
@@ -230,3 +334,16 @@ class RecruiterInvite(Base):
     message = Column(Text, nullable=False)
     status = Column(String(24), nullable=False, default="Sent")
     created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class GradeChangeLedger(Base):
+    __tablename__ = "grade_change_ledger"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    course_id = Column(String(64), ForeignKey("courses.id"), nullable=False)
+    actor_id = Column(String(64), ForeignKey("users.id"), nullable=False)
+    action = Column(String(64), nullable=False)  # curve_applied, grace_marks, drop_question, undo
+    before_json = Column(Text, nullable=False)
+    after_json = Column(Text, nullable=False)
+    timestamp = Column(DateTime(timezone=True), default=utcnow)

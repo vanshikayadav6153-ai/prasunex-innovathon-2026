@@ -5,8 +5,17 @@ from sqlalchemy.orm import Session
 
 from ..config import TIER_CONFIG
 from ..database import get_db
-from ..models import College, User
-from ..security import create_access_token, get_current_user, hash_password, require_roles, verify_password
+from ..models import College, MarkRecord, User
+from ..security import (
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    hash_password,
+    require_roles,
+    verify_password,
+    verify_refresh_token,
+    verify_student_row_level_security,
+)
 
 router = APIRouter(prefix="/api", tags=["Auth & Tenancy"])
 
@@ -15,6 +24,10 @@ class LoginRequest(BaseModel):
     email: str
     password: str
     college_code: str | None = None
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 
 class RegisterRequest(BaseModel):
@@ -46,9 +59,12 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
     college = db.query(College).filter(College.id == user.tenant_id).first()
     tier_meta = TIER_CONFIG.get(college.tier, TIER_CONFIG["core"])
-    token = create_access_token(user)
+    access_token = create_access_token(user)
+    refresh_token = create_refresh_token(user)
+
     return {
-        "access_token": token,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "token_type": "bearer",
         "user": {
             "id": user.id,
@@ -69,9 +85,28 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     }
 
 
+@router.post("/auth/refresh")
+def refresh_token_endpoint(payload: RefreshTokenRequest, db: Session = Depends(get_db)):
+    decoded = verify_refresh_token(payload.refresh_token)
+    user = (
+        db.query(User)
+        .filter(User.id == decoded.get("sub"), User.tenant_id == decoded.get("tenant_id"))
+        .first()
+    )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User account no longer active")
+
+    new_access_token = create_access_token(user)
+    new_refresh_token = create_refresh_token(user)
+    return {
+        "access_token": new_access_token,
+        "refresh_token": new_refresh_token,
+        "token_type": "bearer",
+    }
+
+
 @router.post("/auth/register")
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
-    # Public registration must never grant a privileged campus role.
     if payload.role != "student":
         raise HTTPException(status_code=403, detail="Public registration is limited to student accounts")
     college = db.query(College).filter(College.code == payload.college_code.strip().upper()).first()
@@ -122,6 +157,42 @@ def me(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     }
 
 
+@router.get("/marks/student/{student_id}")
+def get_student_marks_rls(
+    student_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Row-Level Security Endpoint:
+    Enforces the rule that a student can read ONLY their own marks.
+    Faculty, HOD, Dean, and Admin can read student marks for cohort analysis.
+    """
+    verify_student_row_level_security(student_id, current_user)
+
+    marks = (
+        db.query(MarkRecord)
+        .filter(
+            MarkRecord.tenant_id == current_user.tenant_id,
+            MarkRecord.student_id == student_id,
+        )
+        .all()
+    )
+
+    return [
+        {
+            "id": m.id,
+            "course_id": m.course_id,
+            "student_id": m.student_id,
+            "total_score": m.total_score,
+            "z_score": m.z_score,
+            "letter_grade": m.letter_grade,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+        }
+        for m in marks
+    ]
+
+
 @router.get("/colleges/public")
 def list_public_colleges(db: Session = Depends(get_db)):
     colleges = db.query(College).all()
@@ -139,7 +210,7 @@ def list_public_colleges(db: Session = Depends(get_db)):
 
 @router.get("/admin/billing")
 def admin_billing(
-    user: User = Depends(require_roles(["chancellor_dean", "professor_hod"])),
+    user: User = Depends(require_roles(["chancellor_dean", "dean", "admin"])),
     db: Session = Depends(get_db),
 ):
     college = db.query(College).filter(College.id == user.tenant_id).first()
@@ -175,7 +246,7 @@ def admin_billing(
 @router.patch("/admin/tier")
 def update_tier(
     payload: TierUpdateRequest,
-    user: User = Depends(require_roles(["chancellor_dean"])),
+    user: User = Depends(require_roles(["chancellor_dean", "dean", "admin"])),
     db: Session = Depends(get_db),
 ):
     if payload.tier not in TIER_CONFIG:

@@ -1,17 +1,41 @@
 import os
-from dataclasses import dataclass
+from pathlib import Path
+from pydantic_settings import BaseSettings
+from pydantic import Field
+
+# Locate .env file
+ROOT_DIR = Path(__file__).resolve().parents[2]
+ENV_FILE = ROOT_DIR / ".env"
+if not ENV_FILE.exists():
+    ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 
 
-@dataclass(frozen=True)
-class Settings:
-    app_name: str = "CAMPUS-NEXUS"
-    database_url: str = os.getenv("DATABASE_URL", "sqlite:///./campus_nexus.db")
-    redis_url: str = os.getenv("REDIS_URL", "")
-    jwt_secret: str = os.getenv("JWT_SECRET", "campus-nexus-dev-secret-key-change-in-prod-2026")
-    jwt_algorithm: str = "HS256"
-    jwt_exp_minutes: int = 60 * 24
-    upload_dir: str = os.getenv("UPLOAD_DIR", "./uploads")
-    ml_dir: str = os.getenv("ML_DIR", "../ml/artifacts")
+class Settings(BaseSettings):
+    app_name: str = "CAMPUS-NEXUS v2"
+    environment: str = "development"
+    database_url: str = Field(default="sqlite:///./campus_nexus.db")
+    database_fallback_url: str = Field(default="sqlite:///./campus_nexus.db")
+    redis_url: str = Field(default="redis://localhost:6379/0")
+    minio_endpoint: str = Field(default="localhost:9000")
+    minio_access_key: str = Field(default="minioadmin")
+    minio_secret_key: str = Field(default="minioadmin_secret")
+    minio_bucket_grievances: str = Field(default="campus-grievances")
+    minio_bucket_assets: str = Field(default="campus-assets")
+    jwt_secret: str = Field(default="campus-nexus-v2-super-secret-jwt-key-2026-hackathon")
+    jwt_algorithm: str = Field(default="HS256")
+    jwt_exp_minutes: int = Field(default=120)
+    refresh_token_exp_days: int = Field(default=7)
+    rate_limit_per_minute: int = Field(default=100)
+    cache_ttl_seconds: int = Field(default=120)
+    demo_time_multiplier: float = Field(default=1.0)
+    upload_dir: str = Field(default="./uploads")
+    ml_dir: str = Field(default="../ml/artifacts")
+
+    model_config = {
+        "env_file": str(ENV_FILE) if ENV_FILE.exists() else None,
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
 
 settings = Settings()

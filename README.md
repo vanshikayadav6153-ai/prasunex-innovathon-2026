@@ -11,7 +11,7 @@
 [![ONNX Runtime](https://img.shields.io/badge/ONNX_Runtime-INT8_CPU--Only-005CED?style=for-the-badge&logo=onnx&logoColor=white)](https://onnxruntime.ai/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector_16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.16-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Tests Passing](https://img.shields.io/badge/Tests-9%2F9%20Passing-success?style=for-the-badge&logo=pytest&logoColor=white)](#23-testing--quality-assurance)
+[![Tests Passing](https://img.shields.io/badge/Tests-21%2F21%20Passing-success?style=for-the-badge&logo=pytest&logoColor=white)](#23-testing--quality-assurance)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
 ---

@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Iterable
+from typing import Iterable, List
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -38,10 +38,34 @@ def create_access_token(user: User) -> str:
         "tenant_id": user.tenant_id,
         "role": user.role,
         "email": user.email,
+        "type": "access",
         "iat": int(now.timestamp()),
         "exp": int((now + timedelta(minutes=settings.jwt_exp_minutes)).timestamp()),
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
+def create_refresh_token(user: User) -> str:
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": user.id,
+        "tenant_id": user.tenant_id,
+        "role": user.role,
+        "type": "refresh",
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(days=settings.refresh_token_exp_days)).timestamp()),
+    }
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
+def verify_refresh_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type: expected refresh token")
+        return payload
+    except jwt.PyJWTError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token") from exc
 
 
 def get_current_user(
@@ -70,10 +94,26 @@ def require_roles(allowed: Iterable[str]):
 
     def _checker(user: User = Depends(get_current_user)) -> User:
         if user.role not in allowed_set:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Role '{user.role}' cannot access this endpoint")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Forbidden: role '{user.role}' cannot access this resource (required: {sorted(list(allowed_set))})",
+            )
         return user
 
     return _checker
+
+
+def verify_student_row_level_security(requested_student_id: str, current_user: User):
+    """
+    Row-Level Security Rule:
+    A student can read only their own marks / academic records.
+    Professors, HODs, Deans, and Admins can view any student records within their tenant.
+    """
+    if current_user.role == "student" and current_user.id != requested_student_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Row-level security violation: Students are strictly restricted to reading only their own records.",
+        )
 
 
 def require_feature(feature_key: str):
