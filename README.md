@@ -482,7 +482,8 @@ This builds and runs:
 - **PostgreSQL 16 (pgvector):** `localhost:5432`
 - **Redis 7:** `localhost:6379`
 
-<<<<<<< HEAD
+### Demo Accounts & Credentials
+
 | Role          | Email                    | Password       |
 | ------------- | ------------------------ | -------------- |
 | Administrator | `admin@nitx.demo`      | `admin`      |
@@ -490,9 +491,8 @@ This builds and runs:
 | Student       | `student001@nitx.demo` | `student123` |
 | Technician    | `technician@nitx.demo` | `technician` |
 | Recruiter     | `recruiter@nitx.demo`  | `recruiter`  |
-=======
+
 ---
->>>>>>> f2ee259a (Deploy: Update CAMPUS-NEXUS v2 with multi-colour design, test suite, and comprehensive README)
 
 ## 16. Prerequisites
 
