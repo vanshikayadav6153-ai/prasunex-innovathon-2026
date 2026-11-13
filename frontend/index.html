@@ -11,12 +11,14 @@
 
     <style>
         :root {
-            --bg: #041d18;
-            --green: #087f65;
-            --mint: #50dda9;
-            --gold: #e9bb62;
-            --white: #f4f8f3;
-            --muted: #a8c4b8;
+            --bg: #0B1120;
+            --navy: #111A2E;
+            --cobalt: #3B82F6;
+            --indigo: #6366F1;
+            --mint: #60A5FA;
+            --gold: #F59E0B;
+            --white: #F8FAFC;
+            --muted: #94A3B8;
         }
 
         * {
@@ -27,7 +29,7 @@
 
         body {
             min-height: 100vh;
-            background: #020e0b;
+            background: #070B14;
             display: grid;
             place-items: center;
             font-family: 'Manrope', sans-serif;
@@ -42,12 +44,12 @@
             position: relative;
             overflow: hidden;
             background:
-                radial-gradient(ellipse at 78% 40%, #087f654d, transparent 40%),
-                radial-gradient(ellipse at 15% 90%, #087f6530, transparent 35%),
-                linear-gradient(120deg, #041d18, #082d24 65%, #041a15);
-            border: 1px solid #50dda944;
+                radial-gradient(ellipse at 78% 40%, rgba(99, 102, 241, 0.22), transparent 45%),
+                radial-gradient(ellipse at 15% 90%, rgba(59, 130, 246, 0.18), transparent 40%),
+                linear-gradient(120deg, #0B1120, #111A2E 65%, #0B1120);
+            border: 1px solid rgba(99, 132, 219, 0.35);
             border-radius: 20px;
-            box-shadow: 0 30px 100px #0009;
+            box-shadow: 0 30px 100px #000c;
             padding: 5%;
         }
 
@@ -57,7 +59,7 @@
             position: absolute;
             width: 650px;
             height: 650px;
-            border: 1px solid #50dda91c;
+            border: 1px solid rgba(99, 102, 241, 0.15);
             border-radius: 50%;
             right: -100px;
             top: -100px;
@@ -83,9 +85,9 @@
             position: absolute;
             width: 400px;
             height: 400px;
-            background: #36dba0;
+            background: #4F46E5;
             filter: blur(180px);
-            opacity: .12;
+            opacity: .18;
             right: 15%;
             top: 20%;
         }
@@ -109,21 +111,21 @@
         .logo {
             width: 48px;
             height: 48px;
-            border: 1px solid var(--mint);
+            border: 1px solid var(--cobalt);
             border-radius: 14px;
             display: grid;
             place-items: center;
             font-size: 26px;
-            color: var(--mint);
-            background: #50dda912;
-            box-shadow: 0 0 25px #50dda922;
+            color: #FFFFFF;
+            background: linear-gradient(135deg, var(--indigo), var(--cobalt));
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
         }
 
         .brand-name {
             font-size: 19px;
             font-weight: 800;
             letter-spacing: 2px;
-            color: var(--mint);
+            color: #FFFFFF;
         }
 
         .event {
@@ -188,12 +190,12 @@
         }
 
         .chip {
-            border: 1px solid #50dda955;
-            background: #50dda910;
+            border: 1px solid rgba(99, 132, 219, 0.35);
+            background: rgba(99, 102, 241, 0.12);
             padding: 10px 14px;
             border-radius: 9px;
             font-size: 10px;
-            color: var(--mint);
+            color: #93C5FD;
             font-weight: 700;
             letter-spacing: 1px;
         }
@@ -213,20 +215,20 @@
             width: 125px;
             height: 125px;
             border-radius: 50%;
-            background: radial-gradient(circle, #126f55, #041d18);
-            border: 2px solid var(--mint);
-            box-shadow: 0 0 30px #50dda966, inset 0 0 30px #50dda922;
+            background: radial-gradient(circle, #1E1B4B, #0B1120);
+            border: 2px solid var(--cobalt);
+            box-shadow: 0 0 35px rgba(59, 130, 246, 0.5), inset 0 0 30px rgba(99, 102, 241, 0.3);
             display: grid;
             place-items: center;
             font-size: 43px;
             font-weight: 800;
-            color: var(--mint);
+            color: #FFFFFF;
             animation: pulse 3s infinite;
         }
 
         @keyframes pulse {
             50% {
-                box-shadow: 0 0 65px #50dda988, inset 0 0 30px #50dda933;
+                box-shadow: 0 0 65px rgba(99, 102, 241, 0.6), inset 0 0 30px rgba(59, 130, 246, 0.4);
             }
         }
 
@@ -242,9 +244,9 @@
         .building {
             width: 105px;
             height: 165px;
-            background: linear-gradient(145deg, #17664f, #08271f);
-            border: 1px solid #50dda977;
-            box-shadow: 0 0 25px #50dda922;
+            background: linear-gradient(145deg, #16223B, #0E172A);
+            border: 1px solid rgba(99, 132, 219, 0.35);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
             padding: 15px 12px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -261,8 +263,8 @@
         }
 
         .window {
-            background: #e9bb62;
-            box-shadow: 0 0 10px #e9bb6277;
+            background: #FBBF24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
             height: 13px;
             animation: blink 3s infinite alternate;
         }
@@ -277,7 +279,7 @@
             position: absolute;
             width: 90%;
             height: 90%;
-            border: 1px dashed #50dda955;
+            border: 1px dashed rgba(99, 102, 241, 0.3);
             border-radius: 50%;
             transform: rotate(-20deg);
         }
@@ -318,7 +320,7 @@
             bottom: 4%;
             left: 5%;
             right: 5%;
-            border-top: 1px solid #50dda944;
+            border-top: 1px solid rgba(99, 132, 219, 0.25);
             padding-top: 18px;
             display: flex;
             justify-content: space-between;
@@ -342,7 +344,7 @@
         }
 
         .footer-mark {
-            color: var(--mint);
+            color: var(--cobalt);
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 2px;
