@@ -5,14 +5,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ivory: "#F7F0E8",
-        nude: "#E8D8C8",
-        beige: "#D2BBA7",
-        mocha: "#A9826D",
-        cocoa: "#795B4B",
-        cream: "#FFFDFC",
-        textPrimary: "#3F3029",
-        textSecondary: "#857366",
+        ivory: "#F8F3ED",
+        nude: "#EFE4D6",
+        beige: "#E3D6C8",
+        mocha: "#7B5844",
+        cocoa: "#2B1E17",
+        cream: "#FFFEFD",
+        textPrimary: "#2B1E17",
+        textSecondary: "#675549",
+        primaryCta: "#7B5844",
+        accentSage: "#4F7A62",
+        accentTerracotta: "#A26A4D",
       },
       fontFamily: {
         serif: ["var(--font-serif)", "Playfair Display", "Georgia", "serif"],
