@@ -7,5 +7,6 @@ __pycache__/
 backend/campus_nexus.db
 campus_nexus.db
 frontend/.next/
+frontend/out/
 .pytest_cache/
 
