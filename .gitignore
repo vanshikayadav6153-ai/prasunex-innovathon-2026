@@ -3,5 +3,9 @@ node_modules/
 .venv/
 __pycache__/
 .env
+*.db
 backend/campus_nexus.db
+campus_nexus.db
 frontend/.next/
+.pytest_cache/
+
