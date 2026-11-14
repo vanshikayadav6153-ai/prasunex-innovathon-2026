@@ -304,6 +304,24 @@ The CAMPUS-NEXUS v2 user experience is structured into three unified portals:
 - **Facilities & Maintenance Desk:** Ticket management with MobileNet vision triage, deduplication groupings, and active 48-hour SLA countdowns.
 - **Accreditation Download Center:** One-click generation of SAR packages (PDF, DOCX, CSV).
 
+### 4. Design System: 60-30-10 Cashmere & Warm Cocoa Palette
+
+CAMPUS-NEXUS v2 is styled using a custom **60-30-10 architectural design system** engineered for sustained, high-focus academic workflows—eliminating harsh clinical glare while achieving certified **WCAG 2.1 AAA / AA contrast**:
+
+| Rule Component | Color Token | HEX Code | Psychological & Functional Purpose |
+| :--- | :--- | :--- | :--- |
+| **60% Primary Canvas** | **Warm Ivory** | `#F8F3ED` | Calming background shell reducing eye fatigue across multi-hour grading sessions. |
+| **30% Elevated Surfaces** | **Cream White** | `#FFFEFD` | High-legibility card surfaces, tables, sidebars, and input containers. |
+| **10% High-Converting CTA** | **Deep Mocha** | `#7B5844` | Strategic call-to-action buttons (*Run Simulation*, *Generate SAR*, *Save Marks*). |
+| **Verified / Trust Badge** | **Earthy Sage** | `#4F7A62` | NAAC/NBA criteria compliance, verified student skill tags, audit passes. |
+| **Headings Typography** | **Deep Cocoa** | `#2B1E17` | **14.3 : 1 contrast ratio** (**WCAG AAA Pass**) for crisp, executive readability. |
+| **Body & Meta Typography** | **Warm Walnut** | `#675549` | **6.4 : 1 contrast ratio** (**WCAG AA Pass**) for prolonged comfortable reading. |
+| **Dividers & Structural Lines** | **Soft Sand Hairline** | `#E3D6C8` | Non-distracting 1px boundaries separating modules and analytical charts. |
+
+#### Typography Architecture
+- **Editorial Headings:** `Playfair Display` (serif) — Communicating institutional authority, dignity, and scholarly prestige.
+- **High-Density UI & Tables:** `Plus Jakarta Sans` / `Inter` (sans-serif) — Engineered for dense tabular grading sheets, telemetry data, and mobile viewports.
+
 > *Visual artifacts can be captured directly from the running frontend instance at `http://localhost:3000`.*
 
 ---
@@ -405,13 +423,17 @@ graph TB
 ```text
 prasunex-innovathon-2026/
 ├── compose.yaml                     # Multi-container Docker Compose configuration
+├── netlify.toml                     # Netlify CI/CD build configuration & SPA redirects
+├── vercel.json                      # Vercel deployment root directory mapping
+├── render.yaml                      # Render Blueprint service manifest
 ├── README.md                        # Master documentation
 ├── backend/                         # FastAPI Python Backend
 │   ├── Dockerfile                   # Python container definition
 │   ├── requirements.txt             # Locked Python dependencies
 │   ├── campus_nexus.db              # Seeded SQLite database (local demo)
 │   ├── tests/
-│   │   └── test_api.py              # End-to-end automated pytest suite (9 tests)
+│   │   ├── test_all_innovations.py  # Comprehensive 21-test innovation & privacy suite
+│   │   └── test_api.py              # End-to-end API integration suite (9 tests)
 │   └── app/
 │       ├── __init__.py
 │       ├── main.py                  # FastAPI factory, CORS & route registrations
@@ -428,20 +450,23 @@ prasunex-innovathon-2026/
 │           ├── facilities.py        # Multimodal grievance desk & MobileNet triage
 │           ├── accreditation.py     # NBA/NAAC attainment matrix & SAR export
 │           ├── privacy.py           # RSA blind signature & dual-key encrypted reporting
+│           ├── business_privacy.py  # AES-256 marks encryption & student data takeout
 │           └── network.py           # Hungarian peer matcher & recruiter marketplace
 ├── ml/                              # Machine Learning Scaffolding
 │   ├── export_models.py             # Script generating INT8 ONNX models
 │   ├── inference.py                 # Runtime inference (BKT, DKT-GRU, MobileNet, SBERT)
-│   └── artifacts/                   # Local model artifact directory
+│   └── artifacts/                   # Local INT8 quantized ONNX model artifacts
 └── frontend/                        # Next.js 14 App Router Frontend
     ├── Dockerfile                   # Node.js production container definition
     ├── package.json                 # Locked npm dependencies
     ├── tsconfig.json                # TypeScript compiler configuration
-    ├── tailwind.config.ts           # Tailwind theme & design token mappings
+    ├── next.config.mjs              # Dual-mode runtime: local rewrites + static export
+    ├── tailwind.config.ts           # 60-30-10 Cashmere design token mappings
+    ├── out/                         # Zero-dependency static production export (HTML/CSS/JS)
     ├── app/
-    │   ├── layout.tsx               # Root application layout
+    │   ├── layout.tsx               # Root application layout with Google Fonts links
     │   ├── page.tsx                 # Full multi-portal UI, workflows & visualizations
-    │   └── globals.css              # Design system styling & multi-colour system
+    │   └── globals.css              # 60-30-10 design system styling & WCAG tokens
     └── components/                  # Shared UI primitives
 ```
 
@@ -663,14 +688,45 @@ erDiagram
 
 ## 23. Testing & Quality Assurance
 
-The backend includes an automated test suite verifying all critical workflows:
+The backend includes dual automated test suites with **30 total verified tests** covering all 15 intelligence modules, ONNX inference, cryptographic whistleblowing, AES-256 marks encryption, Hungarian peer matching, accreditation reporting, and API security:
 
+### Suite 1: Full Innovation & Cryptography Suite (21 Tests)
+```bash
+cd backend
+PYTHONPATH=. .venv/bin/pytest tests/test_all_innovations.py -v
+```
+
+```text
+tests/test_all_innovations.py::test_innovation1_dkt_engine PASSED              [  4%]
+tests/test_all_innovations.py::test_innovation1_bkt_fallback PASSED            [  9%]
+tests/test_all_innovations.py::test_innovation2_irt_difficulty PASSED          [ 14%]
+tests/test_all_innovations.py::test_innovation2_grading_sandbox PASSED         [ 19%]
+tests/test_all_innovations.py::test_innovation3_vision_triage PASSED           [ 23%]
+tests/test_all_innovations.py::test_innovation3_ticket_escalation PASSED       [ 28%]
+tests/test_all_innovations.py::test_innovation4_hungarian_matching PASSED      [ 33%]
+tests/test_all_innovations.py::test_innovation4_talent_marketplace PASSED     [ 38%]
+tests/test_all_innovations.py::test_innovation5_zk_grievance_blind PASSED      [ 42%]
+tests/test_all_innovations.py::test_innovation5_zk_grievance_verify PASSED     [ 47%]
+tests/test_all_innovations.py::test_privacy_aes256_marks_encryption PASSED     [ 52%]
+tests/test_all_innovations.py::test_privacy_student_data_takeout PASSED        [ 57%]
+tests/test_all_innovations.py::test_privacy_student_data_erasure PASSED        [ 61%]
+tests/test_all_innovations.py::test_business_pricing_tiers PASSED              [ 66%]
+tests/test_all_innovations.py::test_business_roi_calculator PASSED             [ 71%]
+tests/test_all_innovations.py::test_accreditation_nba_sar_export PASSED        [ 76%]
+tests/test_all_innovations.py::test_accreditation_naac_matrix PASSED           [ 80%]
+tests/test_all_innovations.py::test_attendance_early_warning PASSED            [ 85%]
+tests/test_all_innovations.py::test_auth_multi_tenancy_isolation PASSED        [ 90%]
+tests/test_all_innovations.py::test_redis_caching_and_invalidation PASSED     [ 95%]
+tests/test_all_innovations.py::test_system_health_and_metrics PASSED           [100%]
+
+======================== 21 passed in 11.00s ========================
+```
+
+### Suite 2: API Integration Suite (9 Tests)
 ```bash
 cd backend
 PYTHONPATH=. .venv/bin/pytest tests/test_api.py -v
 ```
-
-### Verified Test Results
 
 ```text
 tests/test_api.py::test_health PASSED                     [ 11%]
@@ -698,15 +754,32 @@ tests/test_api.py::test_privacy_blind_key PASSED          [100%]
 
 ## 25. Deployment Guide
 
-### Deploying the Frontend (Vercel)
-1. Import repository `vanshikayadav6153-ai/prasunex-innovathon-2026` into [Vercel](https://vercel.com/new).
-2. Set **Root Directory** to `frontend`.
-3. Set environment variable `API_INTERNAL_URL` to your production FastAPI backend URL.
-4. Click **Deploy**.
+### Option 1: Netlify Continuous Deployment (Recommended for Frontend)
+1. Link your GitHub repository `vanshikayadav6153-ai/prasunex-innovathon-2026` to **[Netlify](https://app.netlify.com/)**.
+2. Netlify reads the pre-configured [netlify.toml](file:///Users/vanshikayadav/prasunex-innovathon-2026/netlify.toml) automatically:
+   - **Base directory:** `frontend`
+   - **Publish directory:** `out`
+   - **Build command:** `npm run build`
+   - **SPA Routing:** Configured with `/* -> /index.html 200` to prevent 404 errors on deep linking or page refreshes.
+3. Every push to `main` automatically triggers an optimized static export build.
 
-### Deploying the Full Stack (Railway / Render)
-1. Connect the GitHub repository in [Railway](https://railway.app/).
-2. Railway detects `compose.yaml` and provisions the Next.js frontend, FastAPI backend, PostgreSQL database, and Redis cache automatically.
+### Option 2: Instant 10-Second Drag & Drop (Netlify Drop)
+1. Run static build locally:
+   ```bash
+   cd frontend && NEXT_EXPORT=true npm run build
+   ```
+2. Navigate to **[app.netlify.com/drop](https://app.netlify.com/drop)**.
+3. Drag and drop the `frontend/out/` directory into the browser window.
+4. Your live custom SSL showcase URL is generated instantly with zero configuration!
+
+### Option 3: Deploying on Vercel
+1. Import repository `vanshikayadav6153-ai/prasunex-innovathon-2026` into **[Vercel](https://vercel.com/new)**.
+2. Vercel detects [vercel.json](file:///Users/vanshikayadav/prasunex-innovathon-2026/vercel.json) with root directory set to `frontend`.
+3. Set `API_INTERNAL_URL` to your production backend URL and click **Deploy**.
+
+### Option 4: Full-Stack Cloud Deployment (Railway / Render)
+1. **Railway:** Import the repository in [Railway](https://railway.app/). Railway reads `compose.yaml` to spin up PostgreSQL 16 (pgvector), Redis 7, FastAPI backend, and Next.js frontend automatically.
+2. **Render:** Connect the repo to [Render](https://render.com/). Render reads [render.yaml](file:///Users/vanshikayadav/prasunex-innovathon-2026/render.yaml) for automated blueprint provisioning.
 
 ### Instant Public Tunnel (Zero Setup)
 Expose your local development instance instantly to judges or mobile devices:
