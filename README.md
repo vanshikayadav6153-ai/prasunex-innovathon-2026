@@ -319,8 +319,8 @@ CAMPUS-NEXUS v2 is styled using a custom **60-30-10 architectural design system*
 | **Dividers & Structural Lines** | **Soft Sand Hairline** | `#E3D6C8` | Non-distracting 1px boundaries separating modules and analytical charts. |
 
 #### Typography Architecture
-- **Editorial Headings:** `Playfair Display` (serif) — Communicating institutional authority, dignity, and scholarly prestige.
-- **High-Density UI & Tables:** `Plus Jakarta Sans` / `Inter` (sans-serif) — Engineered for dense tabular grading sheets, telemetry data, and mobile viewports.
+- **Editorial Headings & UI:** `Manrope` (modern geometric sans) — Communicating institutional authority, precision, and modern accessibility.
+- **Formulas, Telemetry & Code:** `JetBrains Mono` (monospace) — Engineered for cryptographic proofs, Gaussian curve parameters, and token verification.
 
 > *Visual artifacts can be captured directly from the running frontend instance at `http://localhost:3000`.*
 
