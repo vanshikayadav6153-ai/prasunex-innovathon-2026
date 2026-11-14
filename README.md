@@ -16,13 +16,10 @@
 
 ---
 
-## 🌐 Live Deployments & Repository Links
+## 🌐 Live Deployment & Repository Links
 
-- **🌍 Live Deployed Showcase:** [https://campus-nexus0.netlify.app/](https://campus-nexus0.netlify.app/)
+- **🌍 Live Deployed Application:** [https://campus-nexus0.netlify.app/](https://campus-nexus0.netlify.app/)
 - **💻 GitHub Official Repository:** [https://github.com/vanshikayadav6153-ai/prasunex-innovathon-2026](https://github.com/vanshikayadav6153-ai/prasunex-innovathon-2026)
-- **🖥️ Local Web Application:** [http://localhost:3000](http://localhost:3000)
-- **📑 Interactive OpenAPI / Swagger Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **🩺 API Health Endpoint:** [http://localhost:8000/health](http://localhost:8000/health)
 
 ---
 
@@ -244,7 +241,7 @@ graph TD
 
 ## 9. Complete User Workflow (2-Minute Judge Guide)
 
-Experience the entire platform workflow end-to-end in 5 simple steps at [http://localhost:3000](http://localhost:3000):
+Experience the entire platform workflow end-to-end in 5 simple steps on the live application at [https://campus-nexus0.netlify.app/](https://campus-nexus0.netlify.app/) or locally at [http://localhost:3000](http://localhost:3000):
 
 ```mermaid
 sequenceDiagram
