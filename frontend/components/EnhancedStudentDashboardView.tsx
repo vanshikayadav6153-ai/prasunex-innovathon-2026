@@ -1,5 +1,6 @@
 "use client";
 
+import {ThemeToggle} from "./ThemeToggle";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -418,6 +419,10 @@ export function EnhancedStudentDashboardView({
     setActiveMenu(id);
     if (onView && id !== "overview") {
       onView(id);
+    } else {
+      const section = document.getElementById("student-" + id);
+      section?.scrollIntoView({block:"start"});
+      section?.focus({preventScroll:true});
     }
   };
 
@@ -444,7 +449,7 @@ export function EnhancedStudentDashboardView({
       {/* Main Content Workspace (full width, centered max-w-[1280px], 24px side padding) */}
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Hero Banner */}
-        <div className="relative rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-6 sm:p-8 overflow-hidden shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
+        <div id="student-overview" tabIndex={-1} style={{scrollMarginTop:80}} className="relative rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-6 sm:p-8 overflow-hidden shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1.5">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B2E22] flex items-center gap-2">
@@ -590,7 +595,7 @@ export function EnhancedStudentDashboardView({
             {/* Row 1: Mastery Map Card + AI Study Recommendation Card */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* 1. My Mastery Map */}
-              <div className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)] space-y-4">
+              <div id="student-learning" tabIndex={-1} style={{scrollMarginTop:80}} className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)] space-y-4">
                 <div className="flex items-center justify-between border-b border-[#CDEBDD] pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[#34D399]/20 border border-[#34D399]/40 flex items-center justify-center text-[#047857]">
@@ -671,7 +676,7 @@ export function EnhancedStudentDashboardView({
               </div>
 
               {/* 2. AI Study Recommendation with Mascot Robot */}
-              <div className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)] space-y-4 flex flex-col justify-between">
+              <div id="student-planner" tabIndex={-1} style={{scrollMarginTop:80}} className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)] space-y-4 flex flex-col justify-between">
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3 border-b border-[#CDEBDD] pb-3">
                     <div className="flex items-center gap-2">
@@ -746,7 +751,7 @@ export function EnhancedStudentDashboardView({
                   <button
                     onClick={() => {
                       setStudyPlanGenerated(true);
-                      onNotify?.("AI 7-day personalized study schedule synced with calendar!", "success");
+                      onNotify?.("Demo study schedule prepared.", "success");
                       if (onView) onView("planner");
                     }}
                     className="w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 rounded-xl transition-all bg-[#FACC15] text-[#0B2E22] hover:bg-[#EAB308] shadow-[0_1px_2px_rgba(11,46,34,0.06)]"
@@ -761,7 +766,7 @@ export function EnhancedStudentDashboardView({
             </div>
 
             {/* Row 2: Grade Time Machine (Interactive Effort Slider + Chart) */}
-            <div className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-5 sm:p-6 shadow-[0_1px_2px_rgba(11,46,34,0.06)] space-y-5">
+            <div id="student-grade-predictor" tabIndex={-1} style={{scrollMarginTop:80}} className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-5 sm:p-6 shadow-[0_1px_2px_rgba(11,46,34,0.06)] space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#CDEBDD] pb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-white border border-[#CDEBDD] flex items-center justify-center text-[#047857]">
@@ -875,7 +880,7 @@ export function EnhancedStudentDashboardView({
             </div>
 
             {/* Row 3: Upcoming Activities List */}
-            <div className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)] space-y-4">
+            <div id="student-academics" tabIndex={-1} style={{scrollMarginTop:80}} className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)] space-y-4">
               <div className="flex items-center justify-between border-b border-[#CDEBDD] pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-white border border-[#CDEBDD] flex items-center justify-center text-[#047857]">
@@ -954,11 +959,8 @@ export function EnhancedStudentDashboardView({
                   <button
                     key={item.id}
                     onClick={() => {
-                      if (item.id === "qa-drills" && onView) onView("drills");
-                      else if (item.id === "qa-planner" && onView) onView("planner");
-                      else if (item.id === "qa-grievance" && onView) onView("privacy");
-                      else if (item.id === "qa-matcher" && onView) onView("community");
-                      else onNotify?.(`Opened ${item.label}`, "info");
+                      const dest: Record<string,string> = {"qa-drills":"drills","qa-planner":"planner","qa-grievance":"privacy","qa-matcher":"community"};
+                      handleNavClick(dest[item.id]);
                     }}
                     className="p-3 rounded-xl bg-white border border-[#CDEBDD] hover:border-[#34D399] hover:bg-[#F0FAF5] transition-all text-left group"
                   >
@@ -985,7 +987,7 @@ export function EnhancedStudentDashboardView({
             </div>
 
             {/* NEXUS AI Copilot Chat Drawer */}
-            <div className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] shadow-[0_1px_2px_rgba(11,46,34,0.06)] overflow-hidden flex flex-col h-[460px]">
+            <div id="student-copilot" tabIndex={-1} style={{scrollMarginTop:80}} className="rounded-xl bg-[#F0FAF5] border border-[#CDEBDD] shadow-[0_1px_2px_rgba(11,46,34,0.06)] overflow-hidden flex flex-col h-[460px]">
               {/* Copilot Header */}
               <div className="p-4 border-b border-[#CDEBDD] bg-white flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -1086,6 +1088,10 @@ export function EnhancedStudentDashboardView({
           )}
         </div>
       </div>
+        <div className="nx nx-grid">
+          {([["drills","Micro Drills","m15","Practise a recall prompt"],["privacy","Grievance Centre","m02","Inspect the confidential reporting workflow"],["community","Campus Life","m04","Explore peer matching"]] as const).map(([id,title,module,label])=><section className="nx-card" id={"student-"+id} key={id} tabIndex={-1} style={{scrollMarginTop:80}}><small>DEMO</small><h2>{title}</h2><Link href={"/modules/"+module}>{label} →</Link>{id==="community"&&<p><Link href="/modules/m14">Campus notices →</Link></p>}</section>)}
+          <section id="student-settings" className="nx-card" tabIndex={-1} style={{scrollMarginTop:80}}><h2>Settings</h2><p>Display theme on this device</p><ThemeToggle/></section>
+        </div>
       </main>
       {tourOpen && (
         <div

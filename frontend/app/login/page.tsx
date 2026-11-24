@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, Suspense, useRef } from "react";
+import React, { useCallback, useState, useEffect, FormEvent, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import {
@@ -172,7 +172,7 @@ function LoginPageContent() {
     }
   };
 
-  const handleGoogleCredential = async (response: { credential?: string }) => {
+  const handleGoogleCredential = useCallback(async (response: { credential?: string }) => {
     if (!response.credential) {
       setErrorMsg("Google did not return a sign-in credential. Please try again.");
       return;
@@ -190,7 +190,7 @@ function LoginPageContent() {
     } finally {
       setBusy(false);
     }
-  };
+  }, [loginWithGoogle, redirectParam, router]);
 
   const handleGoogleSignIn = () => {
     setErrorMsg(null);
@@ -240,7 +240,7 @@ function LoginPageContent() {
       script.onload = null;
       script.onerror = null;
     };
-  }, [googleClientId]);
+  }, [googleClientId, handleGoogleCredential]);
 
   const handleQuickDemoLogin = async (acc: (typeof DEMO_ACCOUNTS)[0]) => {
     setErrorMsg(null);

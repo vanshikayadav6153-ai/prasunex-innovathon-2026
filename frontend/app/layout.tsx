@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./campus.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { LogoutButton } from "@/components/LogoutButton";
 
@@ -20,18 +21,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body className="bg-white text-[#0B2E22] min-h-screen antialiased selection:bg-[#34D399] selection:text-[#0B2E22]">
         <AuthProvider>
           <LogoutButton />

@@ -1,0 +1,2 @@
+import {defineConfig} from "@playwright/test";
+export default defineConfig({testDir:"./tests",workers:1,timeout:90000,use:{baseURL:process.env.E2E_URL||"http://127.0.0.1:3000",channel:process.env.E2E_CHANNEL||undefined,trace:process.env.CI?"retain-on-failure":"off"},projects:[{name:"desktop",use:{viewport:{width:1366,height:850}}},{name:"tablet",use:{viewport:{width:768,height:1024}}},{name:"mobile",use:{viewport:{width:360,height:800}}}]});

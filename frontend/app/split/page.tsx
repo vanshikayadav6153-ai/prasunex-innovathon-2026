@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
+import {getReadiness} from "@/lib/platform";
+
 type ViewMode = "split-50" | "split-70-30" | "split-30-70" | "frontend-only" | "backend-only";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
@@ -34,8 +36,8 @@ export default function UnifiedFullStackView() {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/health`);
-        setBackendOnline(res.ok);
+        const res = await getReadiness(API_BASE_URL);
+        setBackendOnline(res.ready);
       } catch (err) {
         setBackendOnline(false);
       }

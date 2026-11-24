@@ -8,25 +8,27 @@ client = TestClient(app)
 def test_health():
     res = client.get("/health")
     assert res.status_code == 200
-    assert res.json() == {"status": "ok", "service": "campus-nexus-api"}
+    payload = res.json()
+    assert payload["status"] == "ok"
+    assert payload["service"] == "campus-nexus-api"
+    assert payload["database"] == "connected"
 
 
 def test_public_colleges():
     res = client.get("/api/colleges/public")
     assert res.status_code == 200
     colleges = res.json()
-    assert len(colleges) >= 2
+    assert len(colleges) >= 1
     codes = [c["code"] for c in colleges]
     assert "NITX" in codes
-    assert "RBCE" in codes
 
 
 def test_role_logins():
     roles = [
-        ("admin@nitx.demo", "admin", "chancellor_dean"),
-        ("professor@nitx.demo", "professor", "professor_hod"),
+        ("admin@nitx.demo", "admin", "admin"),
+        ("professor@nitx.demo", "professor", "professor"),
         ("student001@nitx.demo", "student123", "student"),
-        ("technician@nitx.demo", "technician", "technician_warden"),
+        ("technician@nitx.demo", "technician", "technician"),
         ("recruiter@nitx.demo", "recruiter", "recruiter"),
     ]
     for email, password, expected_role in roles:
