@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, Suspense } from "react";
+import React, { useCallback, useState, useEffect, FormEvent, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import {
@@ -21,7 +21,7 @@ import {
   KeyRound,
   RotateCcw,
 } from "lucide-react";
-import { useAuth, getDashboardPathForRole } from "@/context/AuthContext";
+import { useAuth, normalizeRole, getDashboardPathForRole } from "@/context/AuthContext";
 
 type AuthTab = "signin" | "signup" | "forgot";
 
@@ -52,7 +52,7 @@ const DEMO_ACCOUNTS = [
     password: "Student@123",
     icon: GraduationCap,
     desc: "Academic radar, 75% attendance forecaster & peer study",
-    accentColor: "#047857",
+    color: "from-amber-50 to-white text-slate-800 border-amber-200/90 hover:border-amber-400 hover:shadow-md",
   },
   {
     role: "faculty",
@@ -62,7 +62,7 @@ const DEMO_ACCOUNTS = [
     password: "Faculty@123",
     icon: BookOpenCheck,
     desc: "Relative grading sandbox, IRT item audit & at-risk alerts",
-    accentColor: "#1D4ED8",
+    color: "from-amber-50 to-white text-slate-800 border-amber-200/90 hover:border-amber-400 hover:shadow-md",
   },
   {
     role: "admin",
@@ -72,7 +72,7 @@ const DEMO_ACCOUNTS = [
     password: "Admin@123",
     icon: Building2,
     desc: "Campus overview, ARR billing, NBA outcomes & SLA desk",
-    accentColor: "#B91C1C",
+    color: "from-amber-50 to-white text-slate-800 border-amber-200/90 hover:border-amber-400 hover:shadow-md",
   },
   {
     role: "other",
@@ -82,7 +82,7 @@ const DEMO_ACCOUNTS = [
     password: "Staff@123",
     icon: Wrench,
     desc: "Facilities triage desk, hash-chained ledger & campus logistics",
-    accentColor: "#BE185D",
+    color: "from-amber-50 to-white text-slate-800 border-amber-200/90 hover:border-amber-400 hover:shadow-md",
   },
 ];
 
@@ -95,37 +95,35 @@ function LoginPageContent() {
   const { user, isAuthenticated, isLoading: authLoading, login, loginWithGoogle, register, forgotPassword, resetPassword } = useAuth();
 
   const [tab, setTab] = useState<AuthTab>("signin");
+  const [showPassword, setShowPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const googleInitialized = useRef(false);
 
-  // Sign In State
+  // Sign In state
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [emailInputUnlocked, setEmailInputUnlocked] = useState(false);
   const [passwordInputUnlocked, setPasswordInputUnlocked] = useState(false);
 
-  // Sign Up State
+  // Sign Up state (Admin role is strictly excluded from public registration)
   const [signUpName, setSignUpName] = useState("");
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
   const [signUpRole, setSignUpRole] = useState<"student" | "faculty" | "other">("student");
   const [signUpDept, setSignUpDept] = useState("CSE");
 
-  // Forgot Password State
+  // Forgot Password state
   const [forgotEmail, setForgotEmail] = useState("");
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [forgotStep, setForgotStep] = useState<"request" | "reset">("request");
 
-  // UI Feedback
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
-  // Auto-redirect if already logged in
+  // Redirect authenticated user immediately to their dashboard
   useEffect(() => {
-    if (isAuthenticated && user && !authLoading) {
+    if (!authLoading && isAuthenticated && user) {
       const target = redirectParam || getDashboardPathForRole(user.role);
       router.replace(target);
     }
@@ -157,14 +155,14 @@ function LoginPageContent() {
     setSuccessMsg(null);
 
     if (!signInEmail.trim() || !signInPassword) {
-      setErrorMsg("Please provide both email and password.");
+      setErrorMsg("Please enter both email and password.");
       return;
     }
 
     setBusy(true);
     try {
       const loggedUser = await login(signInEmail.trim(), signInPassword, "NITX");
-      setSuccessMsg(`Welcome back, ${loggedUser.full_name}! Redirecting...`);
+      setSuccessMsg(`Welcome back, ${loggedUser.full_name || loggedUser.email}! Redirecting...`);
       const target = redirectParam || getDashboardPathForRole(loggedUser.role);
       setTimeout(() => router.push(target), 400);
     } catch (err: any) {
@@ -174,72 +172,75 @@ function LoginPageContent() {
     }
   };
 
-  const handleGoogleCredentialResponse = async (response: { credential?: string }) => {
+  const handleGoogleCredential = useCallback(async (response: { credential?: string }) => {
     if (!response.credential) {
-      setErrorMsg("Google sign-in did not return a credential.");
+      setErrorMsg("Google did not return a sign-in credential. Please try again.");
       return;
     }
 
-    setBusy(true);
     setErrorMsg(null);
     setSuccessMsg(null);
-
+    setBusy(true);
     try {
       const loggedUser = await loginWithGoogle(response.credential);
-      setSuccessMsg(`Welcome, ${loggedUser.full_name}! Redirecting...`);
-      const target = redirectParam || getDashboardPathForRole(loggedUser.role);
-      setTimeout(() => router.push(target), 400);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Google authentication failed. Please try again or use email sign-in.");
+      setSuccessMsg(`Welcome back, ${loggedUser.full_name || loggedUser.email}! Redirecting...`);
+      router.replace(redirectParam || getDashboardPathForRole(loggedUser.role));
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Google sign-in failed. Please try again.");
     } finally {
       setBusy(false);
     }
-  };
+  }, [loginWithGoogle, redirectParam, router]);
 
   const handleGoogleSignIn = () => {
+    setErrorMsg(null);
     if (!googleClientId) {
-      setErrorMsg("Google OAuth client ID is not configured. Please use email & password sign-in.");
+      setErrorMsg("Google sign-in is not configured yet. Set NEXT_PUBLIC_GOOGLE_CLIENT_ID to enable it.");
       return;
     }
 
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
-    } else {
-      setErrorMsg("Google Sign-In is initializing. Please wait a moment and try again.");
+    const google = window.google;
+    if (!google?.accounts?.id || !googleInitialized.current) {
+      setErrorMsg("Google sign-in is still loading. Please try again in a moment.");
+      return;
     }
+
+    google.accounts.id.prompt();
   };
 
   useEffect(() => {
-    if (!googleClientId) return;
+    if (!googleClientId || googleInitialized.current) return;
 
-    const existingScript = document.getElementById("google-gsi-script");
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.id = "google-gsi-script";
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        if (window.google?.accounts?.id) {
-          window.google.accounts.id.initialize({
-            client_id: googleClientId,
-            callback: handleGoogleCredentialResponse,
-          });
-        }
-      };
-      document.body.appendChild(script);
-    } else if (window.google?.accounts?.id) {
+    const initializeGoogle = () => {
+      if (!window.google?.accounts?.id || googleInitialized.current) return;
       window.google.accounts.id.initialize({
         client_id: googleClientId,
-        callback: handleGoogleCredentialResponse,
+        callback: handleGoogleCredential,
       });
+      googleInitialized.current = true;
+    };
+
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      'script[src="https://accounts.google.com/gsi/client"]'
+    );
+    if (existingScript) {
+      existingScript.addEventListener("load", initializeGoogle, { once: true });
+      initializeGoogle();
+      return () => existingScript.removeEventListener("load", initializeGoogle);
     }
 
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initializeGoogle;
+    script.onerror = () => setErrorMsg("Could not load Google sign-in. Check your connection and try again.");
+    document.head.appendChild(script);
     return () => {
-      const scriptEl = document.getElementById("google-gsi-script");
-      if (scriptEl) scriptEl.remove();
+      script.onload = null;
+      script.onerror = null;
     };
-  }, [googleClientId]);
+  }, [googleClientId, handleGoogleCredential]);
 
   const handleQuickDemoLogin = async (acc: (typeof DEMO_ACCOUNTS)[0]) => {
     setErrorMsg(null);
@@ -264,19 +265,18 @@ function LoginPageContent() {
     setSuccessMsg(null);
 
     if (!signUpName.trim() || !signUpEmail.trim() || !signUpPassword) {
-      setErrorMsg("All registration fields are required.");
+      setErrorMsg("All fields are required.");
       return;
     }
 
     if (signUpPassword.length < 6) {
-      setErrorMsg("Password must be at least 6 characters long.");
+      setErrorMsg("Password must be at least 6 characters.");
       return;
     }
 
     setBusy(true);
     try {
-      const newUser = await register({
-        name: signUpName.trim(),
+      await register({
         full_name: signUpName.trim(),
         email: signUpEmail.trim(),
         password: signUpPassword,
@@ -284,11 +284,11 @@ function LoginPageContent() {
         department: signUpDept,
         college_code: "NITX",
       });
-      setSuccessMsg(`Account created for ${newUser.full_name}! Redirecting to workspace...`);
-      const target = redirectParam || getDashboardPathForRole(newUser.role);
-      setTimeout(() => router.push(target), 400);
+      setSuccessMsg("Account created successfully! You are now logged in.");
+      const target = redirectParam || getDashboardPathForRole(signUpRole);
+      setTimeout(() => router.push(target), 500);
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create account. Email may already be registered.");
+      setErrorMsg(err.message || "Registration failed. Please check your inputs.");
     } finally {
       setBusy(false);
     }
@@ -357,17 +357,22 @@ function LoginPageContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-[#047857]">
-          <div className="w-8 h-8 border-2 border-[#34D399] border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs tracking-wider text-[#4B6B5E] uppercase font-semibold">Verifying Session...</p>
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-amber-700">
+          <div className="w-8 h-8 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs tracking-wider text-slate-600 uppercase font-medium">Verifying Session...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#0B2E22] flex flex-col justify-between relative font-sans selection:bg-[#34D399]/30">
+    <div className="min-h-screen bg-gradient-to-br from-[#FAF8F5] via-[#F4EFE6] to-[#EAE0D0] text-slate-900 flex flex-col justify-between relative overflow-hidden font-sans">
+      {/* Decorative ambient warm light flares */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -right-32 w-96 h-96 bg-amber-200/35 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-amber-300/20 rounded-full blur-3xl pointer-events-none" />
+
       <Navbar />
 
       {/* Main Login / Signup Container */}
@@ -376,28 +381,28 @@ function LoginPageContent() {
           {/* Left Column: Platform Branding & 1-Click Demo Accounts */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF9C3] border border-[#FACC15] text-[#713F12] text-xs font-bold mb-3 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-[#047857]" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-semibold mb-3 shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 <span>One Campus. One Intelligence.</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0B2E22] leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
                 Enterprise Access <br />
-                <span className="text-[#047857]">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600">
                   Role-Based Portal
                 </span>
               </h1>
-              <p className="mt-2 text-xs sm:text-sm text-[#4B6B5E] leading-relaxed font-normal">
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
                 Log in to your personalized workspace. Students, faculty, campus administrators, and operations staff are automatically routed to their authorized dashboards.
               </p>
             </div>
 
             {/* Quick 1-Click Demo Logins */}
-            <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-2xl p-4 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
+            <div className="bg-white/90 border border-amber-200/90 rounded-2xl p-4 backdrop-blur-xl shadow-lg shadow-amber-950/5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#0B2E22]">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-900">
                   ⚡ 1-Click Demo Accounts
                 </span>
-                <span className="text-[10px] text-[#047857] font-mono font-bold">Bcrypt Authenticated</span>
+                <span className="text-[10px] text-amber-700 font-mono font-medium">Bcrypt Authenticated</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {DEMO_ACCOUNTS.map((acc) => {
@@ -408,38 +413,38 @@ function LoginPageContent() {
                       type="button"
                       disabled={busy}
                       onClick={() => handleQuickDemoLogin(acc)}
-                      className="text-left p-3 rounded-xl border border-[#CDEBDD] bg-white transition-all duration-200 hover:border-[#34D399] hover:bg-[#F0FAF5] hover:shadow-sm disabled:opacity-50 group"
+                      className={`text-left p-3 rounded-xl border transition-all duration-200 bg-gradient-to-br ${acc.color} hover:scale-[1.02] hover:shadow-md disabled:opacity-50 group`}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <Icon className="w-4 h-4 shrink-0 text-[#047857]" />
-                        <span className="text-xs font-bold text-[#0B2E22]">{acc.label}</span>
+                        <Icon className="w-4 h-4 shrink-0 text-amber-700" />
+                        <span className="text-xs font-bold text-amber-900">{acc.label}</span>
                       </div>
-                      <p className="text-[11px] text-[#0B2E22] font-bold truncate">{acc.name}</p>
-                      <p className="text-[10px] text-[#4B6B5E] font-mono truncate">{acc.email}</p>
+                      <p className="text-[11px] text-slate-900 font-bold truncate">{acc.name}</p>
+                      <p className="text-[10px] text-slate-500 font-mono truncate">{acc.email}</p>
                     </button>
                   );
                 })}
               </div>
-              <div className="mt-3 pt-2.5 border-t border-[#CDEBDD] flex items-center justify-between text-[11px] text-[#4B6B5E]">
+              <div className="mt-3 pt-2.5 border-t border-amber-200/80 flex items-center justify-between text-[11px] text-slate-600">
                 <span>All accounts use password:</span>
-                <span className="font-mono bg-[#FEF9C3] px-2 py-0.5 rounded border border-[#FACC15] text-[#713F12] text-[10px] font-bold">
+                <span className="font-mono bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-amber-900 text-[10px] font-semibold">
                   [Role]@123
                 </span>
               </div>
             </div>
 
             {/* Security Assurance Badges */}
-            <div className="flex items-center gap-4 text-xs text-[#4B6B5E] font-medium">
+            <div className="flex items-center gap-4 text-xs text-slate-600 font-medium">
               <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#047857]" />
+                <ShieldCheck className="w-4 h-4 text-amber-600" />
                 <span>Bcrypt Hash</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Lock className="w-4 h-4 text-[#047857]" />
+                <Lock className="w-4 h-4 text-amber-600" />
                 <span>JWT Sessions</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <KeyRound className="w-4 h-4 text-[#047857]" />
+                <KeyRound className="w-4 h-4 text-amber-600" />
                 <span>Server-Side RBAC</span>
               </div>
             </div>
@@ -447,9 +452,9 @@ function LoginPageContent() {
 
           {/* Right Column: Auth Form Card */}
           <div className="lg:col-span-7">
-            <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-3xl p-6 sm:p-8 shadow-[0_1px_2px_rgba(11,46,34,0.06)] relative">
+            <div className="bg-white/95 border border-amber-200/90 rounded-3xl p-6 sm:p-8 backdrop-blur-2xl shadow-xl shadow-amber-950/10 relative">
               {/* Form Tab Switcher */}
-              <div className="flex items-center gap-1.5 p-1 bg-white border border-[#CDEBDD] rounded-2xl mb-6">
+              <div className="flex items-center gap-2 p-1 bg-amber-50/80 border border-amber-200/80 rounded-2xl mb-6">
                 <button
                   type="button"
                   onClick={() => {
@@ -457,10 +462,10 @@ function LoginPageContent() {
                     setErrorMsg(null);
                     setSuccessMsg(null);
                   }}
-                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all ${
                     tab === "signin"
-                      ? "bg-[#34D399] text-[#0B2E22] shadow-sm"
-                      : "text-[#4B6B5E] hover:text-[#0B2E22]"
+                      ? "bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 text-slate-950 font-bold shadow-md shadow-amber-500/25"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Sign In
@@ -472,10 +477,10 @@ function LoginPageContent() {
                     setErrorMsg(null);
                     setSuccessMsg(null);
                   }}
-                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all ${
                     tab === "signup"
-                      ? "bg-[#34D399] text-[#0B2E22] shadow-sm"
-                      : "text-[#4B6B5E] hover:text-[#0B2E22]"
+                      ? "bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 text-slate-950 font-bold shadow-md shadow-amber-500/25"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Register Account
@@ -487,10 +492,10 @@ function LoginPageContent() {
                     setErrorMsg(null);
                     setSuccessMsg(null);
                   }}
-                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all ${
                     tab === "forgot"
-                      ? "bg-[#34D399] text-[#0B2E22] shadow-sm"
-                      : "text-[#4B6B5E] hover:text-[#0B2E22]"
+                      ? "bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 text-slate-950 font-bold shadow-md shadow-amber-500/25"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Reset Password
@@ -501,13 +506,13 @@ function LoginPageContent() {
               {errorMsg && (
                 <div className="mb-5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5 animate-fadeIn">
                   <AlertCircle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
-                  <span className="font-semibold">{errorMsg}</span>
+                  <span>{errorMsg}</span>
                 </div>
               )}
               {successMsg && (
                 <div className="mb-5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5 animate-fadeIn">
                   <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
-                  <span className="font-semibold">{successMsg}</span>
+                  <span>{successMsg}</span>
                 </div>
               )}
 
@@ -517,9 +522,9 @@ function LoginPageContent() {
               {tab === "signin" && (
                 <form onSubmit={handleSignIn} autoComplete="off" className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">Email Address</label>
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">Email Address</label>
                     <div className="relative">
-                      <Mail aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A968A]" />
+                      <Mail aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <input
                         type="email"
                         name="login-email"
@@ -529,28 +534,28 @@ function LoginPageContent() {
                         required
                         value={signInEmail}
                         onChange={(e) => setSignInEmail(e.target.value)}
-                        placeholder="e.g. student@nitx.demo"
-                        className="w-full rounded-xl border border-[#CDEBDD] bg-white py-3 pl-11 pr-4 text-sm text-[#0B2E22] placeholder-[#7A968A] transition-all focus:border-[#34D399] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30"
+                        placeholder="Enter your email"
+                        className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-semibold text-[#0B2E22]">Password</label>
+                      <label className="text-xs font-medium text-slate-700">Password</label>
                       <button
                         type="button"
                         onClick={() => {
                           setTab("forgot");
                           setForgotEmail(signInEmail);
                         }}
-                        className="text-[11px] text-[#047857] font-semibold hover:underline"
+                        className="text-[11px] text-amber-700 font-medium hover:underline"
                       >
                         Forgot password?
                       </button>
                     </div>
                     <div className="relative">
-                      <Lock aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A968A]" />
+                      <Lock aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <input
                         type={showPassword ? "text" : "password"}
                         name="login-password"
@@ -560,14 +565,14 @@ function LoginPageContent() {
                         required
                         value={signInPassword}
                         onChange={(e) => setSignInPassword(e.target.value)}
-                        placeholder="Enter password (e.g. Student@123)"
-                        className="w-full rounded-xl border border-[#CDEBDD] bg-white py-3 pl-11 pr-11 text-sm text-[#0B2E22] placeholder-[#7A968A] transition-all focus:border-[#34D399] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30"
+                        placeholder="Enter your password"
+                        className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-11 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         aria-label="Toggle password visibility"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#7A968A] hover:text-[#0B2E22]"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -578,11 +583,11 @@ function LoginPageContent() {
                     <button
                       type="submit"
                       disabled={busy}
-                      className="w-full bg-[#FACC15] hover:bg-[#EAB308] text-[#0B2E22] font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                      className="w-full bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 hover:brightness-105 active:scale-[0.99] transition-all disabled:opacity-50"
                     >
                       {busy ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-[#0B2E22] border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                           <span>Authenticating...</span>
                         </>
                       ) : (
@@ -596,10 +601,10 @@ function LoginPageContent() {
 
                   <div className="relative py-1" aria-hidden="true">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[#CDEBDD]" />
+                      <div className="w-full border-t border-slate-200" />
                     </div>
                     <div className="relative flex justify-center">
-                      <span className="bg-[#F0FAF5] px-3 text-[11px] font-bold uppercase tracking-wider text-[#4B6B5E]">OR CONTINUE WITH</span>
+                      <span className="bg-white px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:bg-[#0F1527] dark:text-slate-300">OR CONTINUE WITH</span>
                     </div>
                   </div>
 
@@ -607,7 +612,7 @@ function LoginPageContent() {
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={busy}
-                    className="flex w-full items-center justify-center gap-[10px] rounded-xl border border-[#CDEBDD] bg-white py-3 text-sm font-semibold text-[#0B2E22] transition-colors hover:bg-[#F0FAF5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#34D399] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-[10px] rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-800 transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
                   >
                     <svg aria-hidden="true" viewBox="0 0 48 48" className="h-4 w-4">
                       <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" />
@@ -618,12 +623,12 @@ function LoginPageContent() {
                     <span>Sign in with Google</span>
                   </button>
 
-                  <div className="pt-2 text-center text-[11px] text-[#4B6B5E]">
+                  <div className="pt-2 text-center text-[11px] text-slate-500">
                     New to CAMPUS-NEXUS?{" "}
                     <button
                       type="button"
                       onClick={() => setTab("signup")}
-                      className="text-[#047857] font-bold hover:underline"
+                      className="text-amber-700 font-semibold hover:underline"
                     >
                       Create an account
                     </button>
@@ -637,75 +642,75 @@ function LoginPageContent() {
               {tab === "signup" && (
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">Full Name</label>
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">Full Name</label>
                     <div className="relative">
-                      <UserIcon className="w-4 h-4 text-[#7A968A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
                         required
                         value={signUpName}
                         onChange={(e) => setSignUpName(e.target.value)}
                         placeholder="e.g. Diya Sen"
-                        className="w-full bg-white border border-[#CDEBDD] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#0B2E22] placeholder-[#7A968A] focus:outline-none focus:border-[#34D399] focus:ring-2 focus:ring-[#34D399]/30 transition-all"
+                        className="w-full bg-slate-50/80 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:bg-white transition-all"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">Email Address</label>
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">Email Address</label>
                     <div className="relative">
-                      <Mail className="w-4 h-4 text-[#7A968A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="email"
                         required
                         value={signUpEmail}
                         onChange={(e) => setSignUpEmail(e.target.value)}
                         placeholder="e.g. diya.sen@nitx.demo"
-                        className="w-full bg-white border border-[#CDEBDD] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#0B2E22] placeholder-[#7A968A] focus:outline-none focus:border-[#34D399] focus:ring-2 focus:ring-[#34D399]/30 transition-all"
+                        className="w-full bg-slate-50/80 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:bg-white transition-all"
                       />
                     </div>
                   </div>
 
                   {/* Public Role Selector (Admin is strictly disallowed) */}
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">
-                      Select Role <span className="text-[#4B6B5E] font-normal">(Admin is invitation-only)</span>
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                      Select Role <span className="text-slate-500 font-normal">(Admin is invitation-only)</span>
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       <button
                         type="button"
                         onClick={() => setSignUpRole("student")}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all ${
+                        className={`p-2.5 rounded-xl border text-xs font-medium flex flex-col items-center gap-1.5 transition-all ${
                           signUpRole === "student"
-                            ? "bg-[#FEF9C3] border-[#FACC15] text-[#713F12] shadow-sm"
-                            : "bg-white border-[#CDEBDD] text-[#4B6B5E] hover:border-[#34D399]"
+                            ? "bg-amber-100/90 border-amber-500 text-amber-900 font-bold shadow-sm"
+                            : "bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-300"
                         }`}
                       >
-                        <GraduationCap className="w-4 h-4 text-[#047857]" />
+                        <GraduationCap className="w-4 h-4 text-amber-700" />
                         <span>Student</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setSignUpRole("faculty")}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all ${
+                        className={`p-2.5 rounded-xl border text-xs font-medium flex flex-col items-center gap-1.5 transition-all ${
                           signUpRole === "faculty"
-                            ? "bg-[#FEF9C3] border-[#FACC15] text-[#713F12] shadow-sm"
-                            : "bg-white border-[#CDEBDD] text-[#4B6B5E] hover:border-[#34D399]"
+                            ? "bg-amber-100/90 border-amber-500 text-amber-900 font-bold shadow-sm"
+                            : "bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-300"
                         }`}
                       >
-                        <BookOpenCheck className="w-4 h-4 text-[#1D4ED8]" />
+                        <BookOpenCheck className="w-4 h-4 text-sky-600" />
                         <span>Faculty</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setSignUpRole("other")}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all ${
+                        className={`p-2.5 rounded-xl border text-xs font-medium flex flex-col items-center gap-1.5 transition-all ${
                           signUpRole === "other"
-                            ? "bg-[#FEF9C3] border-[#FACC15] text-[#713F12] shadow-sm"
-                            : "bg-white border-[#CDEBDD] text-[#4B6B5E] hover:border-[#34D399]"
+                            ? "bg-amber-100/90 border-amber-500 text-amber-900 font-bold shadow-sm"
+                            : "bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-300"
                         }`}
                       >
-                        <Wrench className="w-4 h-4 text-[#BE185D]" />
+                        <Wrench className="w-4 h-4 text-pink-600" />
                         <span>Other (Staff)</span>
                       </button>
                     </div>
@@ -713,11 +718,11 @@ function LoginPageContent() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">Department</label>
+                      <label className="block text-xs font-medium text-slate-700 mb-1.5">Department</label>
                       <select
                         value={signUpDept}
                         onChange={(e) => setSignUpDept(e.target.value)}
-                        className="w-full bg-white border border-[#CDEBDD] rounded-xl px-3 py-2.5 text-xs text-[#0B2E22] focus:outline-none focus:border-[#34D399] transition-all"
+                        className="w-full bg-slate-50/80 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
                       >
                         <option value="CSE">Computer Science (CSE)</option>
                         <option value="ECE">Electronics (ECE)</option>
@@ -726,22 +731,22 @@ function LoginPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">Password</label>
+                      <label className="block text-xs font-medium text-slate-700 mb-1.5">Password</label>
                       <div className="relative">
-                        <Lock className="w-4 h-4 text-[#7A968A] absolute left-3 top-1/2 -translate-y-1/2" />
+                        <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                           type={showPassword ? "text" : "password"}
                           required
                           value={signUpPassword}
                           onChange={(e) => setSignUpPassword(e.target.value)}
                           placeholder="Min 6 chars"
-                          className="w-full bg-white border border-[#CDEBDD] rounded-xl pl-9 pr-8 py-2.5 text-xs text-[#0B2E22] placeholder-[#7A968A] focus:outline-none focus:border-[#34D399] focus:ring-2 focus:ring-[#34D399]/30 transition-all"
+                          className="w-full bg-slate-50/80 border border-slate-300 rounded-xl pl-9 pr-8 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           aria-label="Toggle password visibility"
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7A968A] hover:text-[#0B2E22]"
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                         >
                           {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
@@ -753,11 +758,11 @@ function LoginPageContent() {
                     <button
                       type="submit"
                       disabled={busy}
-                      className="w-full bg-[#FACC15] hover:bg-[#EAB308] text-[#0B2E22] font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                      className="w-full bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 hover:brightness-105 active:scale-[0.99] transition-all disabled:opacity-50"
                     >
                       {busy ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-[#0B2E22] border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                           <span>Registering Account...</span>
                         </>
                       ) : (
@@ -769,12 +774,12 @@ function LoginPageContent() {
                     </button>
                   </div>
 
-                  <div className="text-center pt-1 text-[11px] text-[#4B6B5E]">
+                  <div className="text-center pt-1 text-[11px] text-slate-500">
                     Already have an account?{" "}
                     <button
                       type="button"
                       onClick={() => setTab("signin")}
-                      className="text-[#047857] font-bold hover:underline"
+                      className="text-amber-700 font-semibold hover:underline"
                     >
                       Sign In
                     </button>
@@ -789,20 +794,20 @@ function LoginPageContent() {
                 <div className="space-y-4">
                   {forgotStep === "request" ? (
                     <form onSubmit={handleForgotPasswordRequest} className="space-y-4">
-                      <p className="text-xs text-[#4B6B5E] leading-relaxed">
+                      <p className="text-xs text-slate-600 leading-relaxed">
                         Enter your registered email address. We will generate a secure one-time password reset token for your account.
                       </p>
                       <div>
-                        <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">Registered Email</label>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">Registered Email</label>
                         <div className="relative">
-                          <Mail className="w-4 h-4 text-[#7A968A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                           <input
                             type="email"
                             required
                             value={forgotEmail}
                             onChange={(e) => setForgotEmail(e.target.value)}
                             placeholder="you@nitx.demo"
-                            className="w-full bg-white border border-[#CDEBDD] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#0B2E22] placeholder-[#7A968A] focus:outline-none focus:border-[#34D399] focus:ring-2 focus:ring-[#34D399]/30 transition-all"
+                            className="w-full bg-slate-50/80 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:bg-white transition-all"
                           />
                         </div>
                       </div>
@@ -811,11 +816,11 @@ function LoginPageContent() {
                         <button
                           type="submit"
                           disabled={busy}
-                          className="w-full bg-[#FACC15] hover:bg-[#EAB308] text-[#0B2E22] font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                          className="w-full bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 hover:brightness-105 active:scale-[0.99] transition-all disabled:opacity-50"
                         >
                           {busy ? (
                             <>
-                              <div className="w-4 h-4 border-2 border-[#0B2E22] border-t-transparent rounded-full animate-spin" />
+                              <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                               <span>Generating Token...</span>
                             </>
                           ) : (
@@ -830,34 +835,34 @@ function LoginPageContent() {
                   ) : (
                     <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
                       <div>
-                        <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">Reset Token</label>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">Reset Token</label>
                         <input
                           type="text"
                           required
                           value={resetToken}
                           onChange={(e) => setResetToken(e.target.value)}
                           placeholder="e.g. rst-abc123xyz"
-                          className="w-full bg-white border border-[#CDEBDD] rounded-xl px-4 py-2.5 text-xs text-[#0B2E22] font-mono placeholder-[#7A968A] focus:outline-none focus:border-[#34D399] transition-all"
+                          className="w-full bg-slate-50/80 border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-mono placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-[#0B2E22] mb-1.5">New Password</label>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">New Password</label>
                         <div className="relative">
-                          <Lock className="w-4 h-4 text-[#7A968A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                           <input
                             type={showPassword ? "text" : "password"}
                             required
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             placeholder="Min 6 characters"
-                            className="w-full bg-white border border-[#CDEBDD] rounded-xl pl-10 pr-10 py-2.5 text-xs text-[#0B2E22] placeholder-[#7A968A] focus:outline-none focus:border-[#34D399] focus:ring-2 focus:ring-[#34D399]/30 transition-all"
+                            className="w-full bg-slate-50/80 border border-slate-300 rounded-xl pl-10 pr-10 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             aria-label="Toggle password visibility"
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#7A968A] hover:text-[#0B2E22]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                           >
                             {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                           </button>
@@ -868,11 +873,11 @@ function LoginPageContent() {
                         <button
                           type="submit"
                           disabled={busy}
-                          className="w-full bg-[#FACC15] hover:bg-[#EAB308] text-[#0B2E22] font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                          className="w-full bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 hover:brightness-105 active:scale-[0.99] transition-all disabled:opacity-50"
                         >
                           {busy ? (
                             <>
-                              <div className="w-4 h-4 border-2 border-[#0B2E22] border-t-transparent rounded-full animate-spin" />
+                              <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                               <span>Updating Password...</span>
                             </>
                           ) : (
@@ -886,12 +891,12 @@ function LoginPageContent() {
                     </form>
                   )}
 
-                  <div className="text-center pt-2 text-[11px] text-[#4B6B5E]">
+                  <div className="text-center pt-2 text-[11px] text-slate-500">
                     Remembered your password?{" "}
                     <button
                       type="button"
                       onClick={() => setTab("signin")}
-                      className="text-[#047857] font-bold hover:underline"
+                      className="text-amber-700 font-semibold hover:underline"
                     >
                       Return to Sign In
                     </button>
@@ -904,7 +909,7 @@ function LoginPageContent() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 w-full border-t border-[#CDEBDD] py-4 px-6 text-center text-xs text-[#4B6B5E] bg-white">
+      <footer className="relative z-10 w-full border-t border-amber-900/10 py-4 px-6 text-center text-xs text-slate-500 backdrop-blur-md bg-white/70">
         <p>
           CAMPUS-NEXUS · Enterprise Cognitive Campus OS · Multi-Tenant Architecture · Demo seeded for Northstar Institute of Technology
         </p>
@@ -917,10 +922,10 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3 text-[#047857]">
-            <div className="w-8 h-8 border-2 border-[#34D399] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs tracking-wider text-[#4B6B5E] uppercase font-semibold">Loading Portal...</p>
+        <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-amber-700">
+            <div className="w-8 h-8 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs tracking-wider text-slate-600 uppercase font-medium">Loading Portal...</p>
           </div>
         </div>
       }

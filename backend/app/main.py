@@ -23,6 +23,9 @@ backend_path = Path(__file__).resolve().parents[1]
 if str(backend_path) not in sys.path:
     sys.path.insert(0, str(backend_path))
 
+from .observability import configure_access_logging
+from .modules.platform import router as platform_router
+from .modules.api_v1_contracts import router as api_v1_contracts_router, ws_router as api_v1_ws_router
 from .config import settings
 from .database import Base, engine, get_db
 from .models import College, Course, KnowledgeState, MaintenanceTicket, User
@@ -41,6 +44,7 @@ from .modules.business_privacy import router as business_privacy_router
 from .modules.accreditation import router as accreditation_router
 from .modules.attendance import router as attendance_router
 from .modules.study import router as study_router
+from .modules.jobs import router as jobs_router
 from .api_v1 import router as api_v1_router
 
 
@@ -50,12 +54,15 @@ sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_access_logging()
     Base.metadata.create_all(bind=engine)
     try:
         from .seed import seed_database
         seed_database()
         from .seed_users import seed_auth_users
         seed_auth_users()
+        from .seed_v2 import seed_v2_models
+        seed_v2_models()
     except Exception as e:
         print(f"Lifespan seed notice: {e}")
     yield
@@ -159,7 +166,7 @@ async def rate_limit_and_metrics_middleware(request: Request, call_next):
         _metrics_error_count += 1
         return JSONResponse(
             status_code=500,
-            content={"detail": "Internal server error", "error_type": type(exc).__name__, "path": request.url.path},
+            content={"detail": "Internal server error"},
         )
 
 
@@ -168,11 +175,14 @@ async def rate_limit_and_metrics_middleware(request: Request, call_next):
 async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error", "error_type": type(exc).__name__, "message": str(exc)},
+        content={"detail": "Internal server error"},
     )
 
 
 # Register all modular routers
+app.include_router(platform_router)
+app.include_router(api_v1_contracts_router)
+app.include_router(api_v1_ws_router)
 app.include_router(auth_router)
 app.include_router(academic_router)
 app.include_router(opportunity_router)
@@ -185,6 +195,7 @@ app.include_router(business_privacy_router)
 app.include_router(accreditation_router)
 app.include_router(attendance_router)
 app.include_router(study_router)
+app.include_router(jobs_router)
 app.include_router(api_v1_router)
 
 
@@ -200,7 +211,7 @@ def health(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
     except Exception as e:
-        db_status = f"unhealthy: {str(e)}"
+        db_status = "unavailable"
 
     global _health_redis_status, _health_redis_checked_at
     now_monotonic = time.monotonic()

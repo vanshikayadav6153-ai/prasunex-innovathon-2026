@@ -10,9 +10,7 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const saved = window.localStorage.getItem(THEME_KEY);
-    const initialDark = saved
-      ? saved === "dark"
-      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialDark = saved === "dark";
     setDark(initialDark);
     document.documentElement.classList.toggle("dark", initialDark);
   }, []);

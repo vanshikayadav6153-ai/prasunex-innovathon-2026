@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./campus.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { LogoutButton } from "@/components/LogoutButton";
 
