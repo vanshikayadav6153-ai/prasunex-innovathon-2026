@@ -15,6 +15,18 @@
 
 ---
 
+## 🌐 Quick Access & Verified Live Deployments
+
+| Component | Production Service | Live URL / Endpoint | Verification Status |
+| :--- | :--- | :--- | :---: |
+| **CampusNexus Web Portal** | Next.js 14 on Vercel | **[https://prasunex-innovathon-2026-f6yw.vercel.app](https://prasunex-innovathon-2026-f6yw.vercel.app)** | 🟢 **Live (HTTP 200)** |
+| **Secondary Production Mirror** | Next.js 14 on Vercel | **[https://frontend-xi-two-83.vercel.app](https://frontend-xi-two-83.vercel.app)** | 🟢 **Live (HTTP 200)** |
+| **Core API (FastAPI)** | Python 3.12 Serverless | **[https://campus-nexus-api.vercel.app/health](https://campus-nexus-api.vercel.app/health)** | 🟢 **Healthy (Connected)** |
+| **API Contract Inventory** | OpenAPI 3.1 Specification | **[https://campus-nexus-api.vercel.app/api/v1/contracts](https://campus-nexus-api.vercel.app/api/v1/contracts)** | 🟢 **Verified (HTTP 200)** |
+| **Primary GitHub Monorepo** | GitHub `main` Branch | **[github.com/vanshikayadav6153-ai/prasunex-innovathon-2026](https://github.com/vanshikayadav6153-ai/prasunex-innovathon-2026)** | 📦 **Up to Date** |
+
+---
+
 ## 📑 Table of Contents
 - [1. Problem Statement](#1-problem-statement)
 - [2. Our Solution](#2-our-solution)
@@ -313,17 +325,23 @@ The login page includes instant 1-click persona switching buttons:
 * **Faculty View:** `professor@campus.edu` / `Prof@123` (Accesses Grading Sandbox, 2PL IRT Audit, KDE Simulator)
 * **Admin View:** `admin@campus.edu` / `Admin@123` (Accesses Ticket Desk, SBERT Deduplication, SLA Timers)
 
+![Landing Page](docs/images/screenshots/landing.png)
+*Figure 4: Public Landing Page displaying 1-click persona switcher, feature cards, and direct portal access.*
+
 ![Dashboard Overview](docs/images/screenshots/dashboard.png)
-*Figure 4: Student Command Center overview with real-time course cards, attendance policy forecaster, and mastery radar.*
+*Figure 5: Student Command Center overview with real-time course cards, attendance policy forecaster, and mastery radar.*
 
 ![Admin Operations](docs/images/screenshots/admin-view.png)
-*Figure 5: Operations & Governance console with real-time SLA breach countdowns and hash-chained ticket queue.*
+*Figure 6: Operations & Governance console with real-time SLA breach countdowns and hash-chained ticket queue.*
 
 ---
 
 ## 12. Demo & Media
 
-* **Live Demo URL:** [https://frontend-vanshikayadav6153-ai.vercel.app](https://frontend-vanshikayadav6153-ai.vercel.app)
+* **Live Web Application (Vercel):** [https://prasunex-innovathon-2026-f6yw.vercel.app](https://prasunex-innovathon-2026-f6yw.vercel.app)
+* **Production Mirror:** [https://frontend-xi-two-83.vercel.app](https://frontend-xi-two-83.vercel.app)
+* **Core API Health Check:** [https://campus-nexus-api.vercel.app/health](https://campus-nexus-api.vercel.app/health)
+* **OpenAPI Contract Inventory:** [https://campus-nexus-api.vercel.app/api/v1/contracts](https://campus-nexus-api.vercel.app/api/v1/contracts)
 * **Video Walkthrough Placeholder:** `[Insert YouTube / Loom Walkthrough Link Here]`
 * **Demo Walkthrough Script:** Full 5-minute presentation script available in [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md).
 
