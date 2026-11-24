@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="100%" height="100%" style="background:#090d16; font-family:Inter,system-ui,sans-serif;">
+  <text x="500" y="45" text-anchor="middle" fill="#f8fafc" font-size="22" font-weight="700">CAMPUS-NEXUS 3 CORE MODULE USER FLOWS</text>
+  <text x="500" y="70" text-anchor="middle" fill="#94a3b8" font-size="13">Sequential Interaction Pipelines for Student, Faculty &amp; Admin</text>
+
+  <!-- Flow 1: Mastery Map -->
+  <g transform="translate(50, 100)">
+    <rect width="900" height="95" rx="10" fill="#111827" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="20" y="25" fill="#60a5fa" font-size="13" font-weight="700">FLOW 1 · STUDENT: MASTERY MAP DIAGNOSTIC LOOP</text>
+    <g transform="translate(20, 40)">
+      <rect x="0" y="0" width="180" height="38" rx="6" fill="#1e293b"/>
+      <text x="90" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">1. Take Micro-Drill</text>
+      <text x="200" y="23" fill="#60a5fa" font-size="16">→</text>
+      <rect x="225" y="0" width="190" height="38" rx="6" fill="#1e293b"/>
+      <text x="320" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">2. DKT State Update</text>
+      <text x="435" y="23" fill="#60a5fa" font-size="16">→</text>
+      <rect x="460" y="0" width="200" height="38" rx="6" fill="#1e293b"/>
+      <text x="560" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">3. DAG Root-Cause Walk</text>
+      <text x="680" y="23" fill="#60a5fa" font-size="16">→</text>
+      <rect x="705" y="0" width="165" height="38" rx="6" fill="#065f46" stroke="#10b981"/>
+      <text x="787" y="23" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">4. Prereq Remediated</text>
+    </g>
+  </g>
+
+  <!-- Flow 2: Grading Sandbox -->
+  <g transform="translate(50, 220)">
+    <rect width="900" height="95" rx="10" fill="#111827" stroke="#10b981" stroke-width="1.5"/>
+    <text x="20" y="25" fill="#34d399" font-size="13" font-weight="700">FLOW 2 · FACULTY: GRADING SANDBOX &amp; IRT AUDIT</text>
+    <g transform="translate(20, 40)">
+      <rect x="0" y="0" width="180" height="38" rx="6" fill="#1e293b"/>
+      <text x="90" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">1. Ingest Marks CSV</text>
+      <text x="200" y="23" fill="#10b981" font-size="16">→</text>
+      <rect x="225" y="0" width="190" height="38" rx="6" fill="#1e293b"/>
+      <text x="320" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">2. 2PL IRT Audit (a, b)</text>
+      <text x="435" y="23" fill="#10b981" font-size="16">→</text>
+      <rect x="460" y="0" width="200" height="38" rx="6" fill="#1e293b"/>
+      <text x="560" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">3. Silverman KDE Curve</text>
+      <text x="680" y="23" fill="#10b981" font-size="16">→</text>
+      <rect x="705" y="0" width="165" height="38" rx="6" fill="#064e3b" stroke="#10b981"/>
+      <text x="787" y="23" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">4. Commit Undo Ledger</text>
+    </g>
+  </g>
+
+  <!-- Flow 3: Ticket Desk -->
+  <g transform="translate(50, 340)">
+    <rect width="900" height="95" rx="10" fill="#111827" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="20" y="25" fill="#fbbf24" font-size="13" font-weight="700">FLOW 3 · ADMIN: TICKET DESK &amp; SBERT INTELLIGENCE</text>
+    <g transform="translate(20, 40)">
+      <rect x="0" y="0" width="180" height="38" rx="6" fill="#1e293b"/>
+      <text x="90" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">1. User Submits Ticket</text>
+      <text x="200" y="23" fill="#f59e0b" font-size="16">→</text>
+      <rect x="225" y="0" width="190" height="38" rx="6" fill="#1e293b"/>
+      <text x="320" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">2. SBERT Vector Match</text>
+      <text x="435" y="23" fill="#f59e0b" font-size="16">→</text>
+      <rect x="460" y="0" width="200" height="38" rx="6" fill="#1e293b"/>
+      <text x="560" y="23" text-anchor="middle" fill="#e2e8f0" font-size="11">3. Priority Weighting W</text>
+      <text x="680" y="23" fill="#f59e0b" font-size="16">→</text>
+      <rect x="705" y="0" width="165" height="38" rx="6" fill="#78350f" stroke="#f59e0b"/>
+      <text x="787" y="23" text-anchor="middle" fill="#fde68a" font-size="11" font-weight="600">4. Hash-Chain Sealed</text>
+    </g>
+  </g>
+</svg>

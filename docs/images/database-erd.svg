@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="100%" height="100%" style="background:#090d16; font-family:Inter,system-ui,sans-serif;">
+  <text x="500" y="45" text-anchor="middle" fill="#f8fafc" font-size="22" font-weight="700">CAMPUS-NEXUS v2 DATABASE SCHEMA (ERD)</text>
+  <text x="500" y="70" text-anchor="middle" fill="#94a3b8" font-size="13">Entity Relationship Diagram for 3 MVP Modules</text>
+
+  <!-- Users -->
+  <g transform="translate(60, 110)">
+    <rect width="250" height="150" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="8" fill="#1e3a8a"/>
+    <text x="12" y="19" fill="#bfdbfe" font-size="12" font-weight="700">users (Tenancy Core)</text>
+    <text x="12" y="48" fill="#e2e8f0" font-size="11">PK id: String (email/roll)</text>
+    <text x="12" y="68" fill="#94a3b8" font-size="11">FK college_id -> colleges.id</text>
+    <text x="12" y="88" fill="#60a5fa" font-size="11">role: student|professor|admin</text>
+    <text x="12" y="108" fill="#94a3b8" font-size="11">hashed_password: String</text>
+    <text x="12" y="128" fill="#94a3b8" font-size="11">created_at: DateTime</text>
+  </g>
+
+  <!-- KnowledgeStates (Module 1) -->
+  <g transform="translate(370, 110)">
+    <rect width="260" height="150" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5"/>
+    <rect width="260" height="28" rx="8" fill="#1e3a8a"/>
+    <text x="12" y="19" fill="#bfdbfe" font-size="12" font-weight="700">knowledge_states (Mastery Map)</text>
+    <text x="12" y="48" fill="#e2e8f0" font-size="11">PK id: Integer</text>
+    <text x="12" y="68" fill="#94a3b8" font-size="11">FK student_id -> users.id</text>
+    <text x="12" y="88" fill="#60a5fa" font-size="11">concept_id: String (OS-DEADLOCK)</text>
+    <text x="12" y="108" fill="#34d399" font-size="11">mastery_prob: Float (0.00-1.00)</text>
+    <text x="12" y="128" fill="#94a3b8" font-size="11">last_updated: DateTime</text>
+  </g>
+
+  <!-- MarksLedger (Module 2) -->
+  <g transform="translate(680, 110)">
+    <rect width="260" height="150" rx="8" fill="#111827" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="260" height="28" rx="8" fill="#065f46"/>
+    <text x="12" y="19" fill="#a7f3d0" font-size="12" font-weight="700">marks_ledger (Grading Sandbox)</text>
+    <text x="12" y="48" fill="#e2e8f0" font-size="11">PK id: Integer</text>
+    <text x="12" y="68" fill="#94a3b8" font-size="11">FK student_id -> users.id</text>
+    <text x="12" y="88" fill="#94a3b8" font-size="11">course_id: String</text>
+    <text x="12" y="108" fill="#34d399" font-size="11">score_encrypted: AES-256 Text</text>
+    <text x="12" y="128" fill="#94a3b8" font-size="11">assessment_type: midsem|endsem</text>
+  </g>
+
+  <!-- MaintenanceTickets (Module 3) -->
+  <g transform="translate(220, 295)">
+    <rect width="270" height="155" rx="8" fill="#111827" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="270" height="28" rx="8" fill="#78350f"/>
+    <text x="12" y="19" fill="#fde68a" font-size="12" font-weight="700">maintenance_tickets (Ticket Desk)</text>
+    <text x="12" y="48" fill="#e2e8f0" font-size="11">PK id: Integer</text>
+    <text x="12" y="68" fill="#94a3b8" font-size="11">title: String, location: String</text>
+    <text x="12" y="88" fill="#fbbf24" font-size="11">embedding: vector(384) [pgvector]</text>
+    <text x="12" y="108" fill="#94a3b8" font-size="11">upvotes: Integer, sla_hours: Int</text>
+    <text x="12" y="128" fill="#94a3b8" font-size="11">hash_chain: SHA-256 Genesis Chain</text>
+  </g>
+
+  <!-- GradingUndoLedger (Module 2 audit) -->
+  <g transform="translate(530, 295)">
+    <rect width="270" height="155" rx="8" fill="#111827" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="270" height="28" rx="8" fill="#065f46"/>
+    <text x="12" y="19" fill="#a7f3d0" font-size="12" font-weight="700">grading_undo_ledger (Audit Log)</text>
+    <text x="12" y="48" fill="#e2e8f0" font-size="11">PK id: Integer</text>
+    <text x="12" y="68" fill="#94a3b8" font-size="11">FK professor_id -> users.id</text>
+    <text x="12" y="88" fill="#34d399" font-size="11">action: curve_shift | drop_question</text>
+    <text x="12" y="108" fill="#94a3b8" font-size="11">snapshot_json: JSONB</text>
+    <text x="12" y="128" fill="#94a3b8" font-size="11">reason: String, timestamp: DateTime</text>
+  </g>
+</svg>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="100%" height="100%" style="background:#090d16; font-family:Inter,system-ui,sans-serif;">
+  <text x="500" y="45" text-anchor="middle" fill="#f8fafc" font-size="22" font-weight="700">CAMPUS-NEXUS 12-WEEK PRODUCTION ROADMAP</text>
+  <text x="500" y="70" text-anchor="middle" fill="#94a3b8" font-size="13">Prasunex Innovathon 2026: MVP Phases &amp; Milestones</text>
+
+  <!-- Timeline Header -->
+  <g transform="translate(250, 100)">
+    <rect x="0" y="0" width="170" height="25" rx="4" fill="#1e293b"/>
+    <text x="85" y="17" text-anchor="middle" fill="#94a3b8" font-size="11">Weeks 1 - 4 (Phase 1)</text>
+    <rect x="180" y="0" width="170" height="25" rx="4" fill="#1e293b"/>
+    <text x="265" y="17" text-anchor="middle" fill="#94a3b8" font-size="11">Weeks 5 - 8 (Phase 2)</text>
+    <rect x="360" y="0" width="170" height="25" rx="4" fill="#1e293b"/>
+    <text x="445" y="17" text-anchor="middle" fill="#94a3b8" font-size="11">Weeks 9 - 12 (Phase 3)</text>
+    <rect x="540" y="0" width="170" height="25" rx="4" fill="#1e293b"/>
+    <text x="625" y="17" text-anchor="middle" fill="#94a3b8" font-size="11">Post-Hackathon (Future)</text>
+  </g>
+
+  <!-- Row 1: Core Foundation & Mastery Map -->
+  <text x="60" y="165" fill="#f8fafc" font-size="13" font-weight="600">Module 1: Mastery Map</text>
+  <rect x="250" y="145" width="220" height="32" rx="6" fill="#3b82f6"/>
+  <text x="360" y="166" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="600">DKT + 7 OS DAG (COMPLETED)</text>
+
+  <!-- Row 2: Grading Sandbox -->
+  <text x="60" y="215" fill="#f8fafc" font-size="13" font-weight="600">Module 2: Grading Sandbox</text>
+  <rect x="380" y="195" width="210" height="32" rx="6" fill="#10b981"/>
+  <text x="485" y="216" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="600">2PL IRT &amp; KDE Curves (COMPLETED)</text>
+
+  <!-- Row 3: Ticket Desk -->
+  <text x="60" y="265" fill="#f8fafc" font-size="13" font-weight="600">Module 3: Ticket Desk</text>
+  <rect x="490" y="245" width="220" height="32" rx="6" fill="#f59e0b"/>
+  <text x="600" y="266" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="600">SBERT Dedup &amp; Hash Chain (COMPLETED)</text>
+
+  <!-- Row 4: Pilot Deployment & Scaling -->
+  <text x="60" y="315" fill="#f8fafc" font-size="13" font-weight="600">Pilot &amp; Cluster Scaling</text>
+  <rect x="650" y="295" width="260" height="32" rx="6" fill="#6366f1" stroke="#818cf8"/>
+  <text x="780" y="316" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="600">Multi-College Cluster (PLANNED)</text>
+
+  <!-- Row 5: Institutional Accreditation -->
+  <text x="60" y="365" fill="#f8fafc" font-size="13" font-weight="600">NBA / NAAC Auto-Dossier</text>
+  <rect x="730" y="345" width="180" height="32" rx="6" fill="#8b5cf6" stroke="#c084fc"/>
+  <text x="820" y="366" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="600">OBE Engine Export (PLANNED)</text>
+</svg>
