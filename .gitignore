@@ -9,6 +9,7 @@ frontend/.next/
 dist/
 build/
 frontend/out/
+*.tsbuildinfo
 
 # Environment files
 .env

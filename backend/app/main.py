@@ -7,7 +7,7 @@ import sys
 import time
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 import redis
@@ -25,7 +25,7 @@ if str(backend_path) not in sys.path:
 
 from .observability import configure_access_logging
 from .modules.platform import router as platform_router
-from .modules.api_v1_contracts import router as api_v1_router, ws_router as api_v1_ws_router
+from .modules.api_v1_contracts import router as api_v1_contracts_router, ws_router as api_v1_ws_router
 from .config import settings
 from .database import Base, engine, get_db
 from .models import College, Course, KnowledgeState, MaintenanceTicket, User
@@ -45,6 +45,7 @@ from .modules.accreditation import router as accreditation_router
 from .modules.attendance import router as attendance_router
 from .modules.study import router as study_router
 from .modules.jobs import router as jobs_router
+from .api_v1 import router as api_v1_router
 
 
 # Initialize python-socketio ASGI server
@@ -180,7 +181,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Register all modular routers
 app.include_router(platform_router)
-app.include_router(api_v1_router)
+app.include_router(api_v1_contracts_router)
 app.include_router(api_v1_ws_router)
 app.include_router(auth_router)
 app.include_router(academic_router)
@@ -195,6 +196,7 @@ app.include_router(accreditation_router)
 app.include_router(attendance_router)
 app.include_router(study_router)
 app.include_router(jobs_router)
+app.include_router(api_v1_router)
 
 
 # --- Health & Prometheus Metrics Endpoints ---
@@ -310,6 +312,15 @@ def dashboard_overview(user: User = Depends(get_current_user), db: Session = Dep
         "average_mastery": avg_mastery,
         "courses": courses_count,
     }
+
+
+@app.websocket("/ws/v1/sla-tracker/{ticket_id}")
+async def app_websocket_sla_tracker(websocket: WebSocket, ticket_id: str):
+    """
+    Live WebSocket Stream of ticket resolution countdown specified in understand.md
+    """
+    from .api_v1 import websocket_sla_tracker_handler
+    await websocket_sla_tracker_handler(websocket, ticket_id)
 
 
 # Socket.IO Event Handlers

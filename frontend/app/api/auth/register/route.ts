@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ detail: "Public registration for Administrator role is strictly prohibited." }, { status: 403 });
     }
 
-    const existing = findUserByEmail(email);
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = await findUserByEmail(normalizedEmail);
     if (existing) {
       return NextResponse.json({ detail: "An account with this email already exists." }, { status: 409 });
     }
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
       tier: "autonomous_enterprise",
       tier_name: "Autonomous Enterprise",
       features: { zk_grievance: true, bkt_diagnostics: true, relative_grading: true, early_warning: true },
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       full_name: name.trim(),
       name: name.trim(),
       role: normalizedRole,
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
       is_new_account: true,
     };
 
-    addUser(newUser);
+    await addUser(newUser);
     const { accessToken, refreshToken } = createJWT(newUser);
 
     const safeUser = {
@@ -92,6 +93,9 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (err: any) {
+    if (err?.code === "23505") {
+      return NextResponse.json({ detail: "An account with this email already exists." }, { status: 409 });
+    }
     return NextResponse.json({ detail: err.message || "Failed to register account" }, { status: 500 });
   }
 }

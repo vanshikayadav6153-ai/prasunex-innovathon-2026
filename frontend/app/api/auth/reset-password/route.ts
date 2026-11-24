@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { findUserByEmail } from "@/lib/server-data";
+import { findUserByEmail, updateUserPassword } from "@/lib/server-data";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,12 +14,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ detail: "Password must be at least 6 characters long." }, { status: 400 });
     }
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return NextResponse.json({ detail: "User with this email not found." }, { status: 404 });
     }
 
-    user.passwordHash = await bcrypt.hash(new_password, 10);
+    const updated = await updateUserPassword(email, await bcrypt.hash(new_password, 10));
+    if (!updated) {
+      return NextResponse.json({ detail: "Password reset is unavailable for this account." }, { status: 404 });
+    }
     return NextResponse.json({
       success: true,
       message: "Password has been successfully updated. You may now sign in.",

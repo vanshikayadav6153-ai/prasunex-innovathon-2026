@@ -10,11 +10,16 @@ if not ENV_FILE.exists():
     ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 
 
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+DEFAULT_DB_PATH = BACKEND_DIR / "campus_nexus.db"
+DEFAULT_DB_URL = f"sqlite:///{DEFAULT_DB_PATH}"
+
+
 class Settings(BaseSettings):
     app_name: str = "CAMPUS-NEXUS v2"
     environment: str = "development"
-    database_url: str = Field(default="sqlite:///./campus_nexus.db")
-    database_fallback_url: str = Field(default="sqlite:///./campus_nexus.db")
+    database_url: str = Field(default=DEFAULT_DB_URL)
+    database_fallback_url: str = Field(default=DEFAULT_DB_URL)
     redis_url: str = Field(default="redis://localhost:6379/0")
     minio_endpoint: str = Field(default="localhost:9000")
     minio_access_key: str = Field(default="minioadmin")

@@ -8,6 +8,7 @@ try:
     from .database import SessionLocal, Base, engine
     from .models import (
         AssessmentQuestion,
+        DrillQuestionReview,
         AttendanceRecord,
         College,
         ConceptNode,
@@ -28,6 +29,7 @@ except ImportError:
     from app.database import SessionLocal, Base, engine
     from app.models import (
         AssessmentQuestion,
+        DrillQuestionReview,
         AttendanceRecord,
         College,
         ConceptNode,
@@ -220,6 +222,27 @@ def seed_database(db: Session | None = None):
                         irt_b=irt_b,
                         irt_a=irt_a,
                     ))
+            db.flush()
+
+            # Reviewed answer keys are separate from the assessment bank so unreviewed
+            # exam prompts can never be exposed as answer-checking drill content.
+            reviewer = db.query(User).filter(User.email == "prof.os@nitx.demo").first()
+            reviewed_drills = {
+                "Q1": (["Code executing with unrestricted hardware privileges.", "Code executing in the restricted mode, where privileged instructions trap to the kernel.", "Code that runs only during device boot.", "Code that cannot access memory."], 1,
+                       "Dual-mode operation separates user execution from kernel execution. Privileged instructions run only in kernel mode; a user-mode attempt traps to the operating system.", "CS301 faculty-reviewed course notes: OS-ARCH, Dual-Mode Operation (Northstar Institute, 2026)."),
+                "Q2": (["The PCB stores the process state and execution context so the OS can stop and later resume it.", "The PCB is the process's compiled executable image.", "The PCB is a disk partition reserved for each process.", "The PCB contains only the process's user-visible name."], 0,
+                       "A process control block records information such as process state, program counter, registers, and scheduling data. The operating system uses it during a context switch.", "CS301 faculty-reviewed course notes: OS-PROC, Process Control Block (Northstar Institute, 2026)."),
+                "Q5": (["A safe state has at least one ordering in which each process can obtain its remaining need from currently available resources plus resources released by earlier processes.", "A safe state requires every resource instance to remain unallocated.", "A safe state means each process already holds its maximum claim.", "A safe state exists only when the system has no waiting processes."], 0,
+                       "Banker's safety check repeatedly finds an unfinished process whose remaining need fits the available vector, then treats that process as finished and adds its allocation back. A complete ordering is a safe sequence.", "CS301 faculty-reviewed course notes: OS-DEADLOCK, Banker's Safety Algorithm (Northstar Institute, 2026)."),
+            }
+            if reviewer:
+                for q_code, (options, correct_idx, explanation, citation) in reviewed_drills.items():
+                    question = db.query(AssessmentQuestion).filter(AssessmentQuestion.course_id == os_course.id,
+                        AssessmentQuestion.q_code == q_code).first()
+                    if question and not db.query(DrillQuestionReview).filter(DrillQuestionReview.question_id == question.id).first():
+                        db.add(DrillQuestionReview(question_id=question.id, options_json=json.dumps(options),
+                            correct_idx=correct_idx, explanation=explanation, source_citation=citation,
+                            reviewed_by=reviewer.id, is_published=True))
             db.flush()
 
         # 5. Enroll Students, Attendance & Mastery Records

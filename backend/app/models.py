@@ -1077,3 +1077,103 @@ class AuditEvent(Base):
         Index("ix_audit_tenant_type_created", "tenant_id", "event_type", "created_at"),
         Index("ix_audit_target", "target_type", "target_id"),
     )
+class ExamScheduleSlot(Base):
+    """
+    CP-SAT Optimized Exam Timetable (v2):
+    Tracks hall allocations, slots, invigilators, and schedule rollback versions.
+    """
+    __tablename__ = "exam_schedule_slots"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    course_id = Column(String(64), ForeignKey("courses.id"), nullable=False)
+    room_id = Column(String(64), nullable=False)
+    slot_time = Column(DateTime(timezone=True), nullable=False)
+    invigilator_id = Column(String(64), ForeignKey("users.id"), nullable=True)
+    cohort = Column(String(64), nullable=False, default="CSE-2026")
+    rollback_version = Column(Integer, nullable=False, default=1)
+    status = Column(String(32), nullable=False, default="scheduled")
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class DrillQuestionReview(Base):
+    """Teacher-reviewed multiple-choice content attached to an assessment bank item."""
+    __tablename__ = "drill_question_reviews"
+
+    question_id = Column(Integer, ForeignKey("assessment_questions.id"), primary_key=True)
+    options_json = Column(Text, nullable=False)
+    correct_idx = Column(Integer, nullable=False)
+    explanation = Column(Text, nullable=False)
+    source_citation = Column(String(500), nullable=True)
+    reviewed_by = Column(String(64), ForeignKey("users.id"), nullable=False)
+    reviewed_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+    is_published = Column(Boolean, nullable=False, default=True)
+
+
+class ReviewAttempt(Base):
+    __tablename__ = "review_attempts"
+
+    id = Column(String(64), primary_key=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    student_id = Column(String(64), ForeignKey("users.id"), nullable=False, index=True)
+    card_id = Column(Integer, ForeignKey("review_cards.id"), nullable=False, index=True)
+    question_id = Column(Integer, ForeignKey("assessment_questions.id"), nullable=False)
+    idempotency_key = Column(String(100), nullable=False)
+    selected_idx = Column(Integer, nullable=False)
+    is_correct = Column(Boolean, nullable=False)
+    confidence = Column(Integer, nullable=False)
+    response_ms = Column(Integer, nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+    stability_before = Column(Float, nullable=False)
+    stability_after = Column(Float, nullable=False)
+    retention_before = Column(Float, nullable=False)
+    next_due = Column(DateTime(timezone=True), nullable=False)
+    __table_args__ = (UniqueConstraint("student_id", "idempotency_key", name="uq_review_attempt_idempotency"),)
+
+
+class ReviewEvent(Base):
+    __tablename__ = "review_events"
+
+    id = Column(String(64), primary_key=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    student_id = Column(String(64), ForeignKey("users.id"), nullable=False, index=True)
+    card_id = Column(Integer, ForeignKey("review_cards.id"), nullable=False, index=True)
+    attempt_id = Column(String(64), ForeignKey("review_attempts.id"), nullable=False, unique=True)
+    event_type = Column(String(40), nullable=False, default="review_completed")
+    payload_json = Column(Text, nullable=False, default="{}")
+    occurred_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class ReviewReminderJob(Base):
+    __tablename__ = "review_reminder_jobs"
+
+    id = Column(String(64), primary_key=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    student_id = Column(String(64), ForeignKey("users.id"), nullable=False, index=True)
+    card_id = Column(Integer, ForeignKey("review_cards.id"), nullable=False, index=True)
+    scheduled_for = Column(DateTime(timezone=True), nullable=False)
+    timezone_name = Column(String(80), nullable=False)
+    status = Column(String(24), nullable=False, default="scheduled")
+    dedupe_key = Column(String(160), nullable=False, unique=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class LabEquipment(Base):
+    """
+    Weibull Failure Reliability Registry (v2):
+    Tracks physical laboratory equipment and hostel utilities with fitted Weibull parameters (k, lambda).
+    """
+    __tablename__ = "lab_equipment"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(64), ForeignKey("colleges.id"), nullable=False, index=True)
+    name = Column(String(128), nullable=False)
+    asset_tag = Column(String(64), unique=True, nullable=False)
+    category = Column(String(64), nullable=False, default="Lab Instrument")
+    location = Column(String(128), nullable=False)
+    installed_at = Column(DateTime(timezone=True), default=utcnow)
+    age_days = Column(Integer, nullable=False, default=180)
+    k_shape = Column(Float, nullable=False, default=2.2)
+    lambda_scale = Column(Float, nullable=False, default=720.0)
+    last_service = Column(DateTime(timezone=True), default=utcnow)
+    status = Column(String(32), nullable=False, default="operational")

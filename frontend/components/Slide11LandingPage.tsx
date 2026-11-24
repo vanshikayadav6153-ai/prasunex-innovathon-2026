@@ -24,6 +24,7 @@ import { FeatureCard } from "./FeatureCard";
 import { GlassCard } from "./GlassCard";
 import { SectionHeader } from "./SectionHeader";
 import { Logo } from "./Logo";
+import ChatWidget from "./ChatWidget";
 import { STATS_DATA, FEATURES_DATA, TESTIMONIALS } from "@/data/landing";
 
 interface Slide11LandingPageProps {
@@ -431,6 +432,7 @@ export function Slide11LandingPage({
             </div>
           </div>
         </footer>
+        <ChatWidget />
       </main>
     </div>
   );

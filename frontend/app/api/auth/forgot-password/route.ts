@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ detail: "Email is required." }, { status: 400 });
     }
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return NextResponse.json({ detail: "User with this email not found." }, { status: 404 });
     }

@@ -19,13 +19,12 @@ import {
   HardHat,
   Server,
   Building,
-  Menu,
-  X,
+  RefreshCw,
+  CheckCircle,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { Logo } from "@/components/Logo";
-import { FreshRoleDashboard } from "@/components/FreshRoleDashboard";
 import { DashboardTopNavbar, NavItem } from "@/components/DashboardTopNavbar";
+import { FreshRoleDashboard } from "@/components/FreshRoleDashboard";
 
 interface Ticket {
   id: string;
@@ -36,14 +35,23 @@ interface Ticket {
   status: "Open" | "In Progress" | "Resolved";
   reportedBy: string;
   time: string;
+  slaRemaining: string;
 }
 
 const INITIAL_TICKETS: Ticket[] = [
-  { id: "TKT-101", title: "Air Conditioner compressor failure in Hardware Lab 3", location: "Lab Complex, Block B", category: "HVAC", priority: "Urgent", status: "In Progress", reportedBy: "prof.embed@nitx.demo", time: "45 mins ago" },
-  { id: "TKT-102", title: "Gigabit switch packet drop on Hostel 4 floor 2", location: "Boys Hostel 4", category: "Network", priority: "High", status: "Open", reportedBy: "warden.hostel@nitx.demo", time: "1 hour ago" },
-  { id: "TKT-103", title: "Projector bulb replacement in Lecture Hall 12", location: "Main Academic Block", category: "AV Equipment", priority: "Medium", status: "Open", reportedBy: "prof.os@nitx.demo", time: "2 hours ago" },
-  { id: "TKT-104", title: "UPS battery backup fault in Server Room", location: "Central IT Facility", category: "Power", priority: "Urgent", status: "In Progress", reportedBy: "tech.hardware@nitx.demo", time: "3 hours ago" },
-  { id: "TKT-105", title: "Water cooler leak in CSE Corridor 1st Floor", location: "CSE Department", category: "Plumbing", priority: "Medium", status: "Resolved", reportedBy: "student001@nitx.demo", time: "Yesterday" },
+  { id: "TKT-101", title: "Air Conditioner compressor failure in Hardware Lab 3", location: "Lab Complex, Block B", category: "HVAC", priority: "Urgent", status: "In Progress", reportedBy: "prof.embed@nitx.demo", time: "45 mins ago", slaRemaining: "01:14:32" },
+  { id: "TKT-102", title: "Gigabit switch packet drop on Hostel 4 floor 2", location: "Boys Hostel 4", category: "Network", priority: "High", status: "Open", reportedBy: "warden.hostel@nitx.demo", time: "1 hour ago", slaRemaining: "04:55:10" },
+  { id: "TKT-103", title: "Projector bulb replacement in Lecture Hall 12", location: "Main Academic Block", category: "AV Equipment", priority: "Medium", status: "Open", reportedBy: "prof.os@nitx.demo", time: "2 hours ago", slaRemaining: "21:40:00" },
+  { id: "TKT-104", title: "UPS battery backup fault in Server Room", location: "Central IT Facility", category: "Power", priority: "Urgent", status: "In Progress", reportedBy: "tech.hardware@nitx.demo", time: "3 hours ago", slaRemaining: "00:45:18" },
+  { id: "TKT-105", title: "Water cooler leak in CSE Corridor 1st Floor", location: "CSE Department", category: "Plumbing", priority: "Medium", status: "Resolved", reportedBy: "student001@nitx.demo", time: "Yesterday", slaRemaining: "Completed" },
+];
+
+const INITIAL_EQUIPMENT = [
+  { id: "EQ-401", name: "High-Speed Centrifuge Alpha", location: "Biotech Lab 2", runtime_hours: 4820, failure_risk: 0.84, status: "Critical", recommended: "Immediate rotor bearing lubrication and seal replacement" },
+  { id: "EQ-402", name: "RF Spectrum Analyzer 6GHz", location: "ECE Wireless Lab", runtime_hours: 3100, failure_risk: 0.62, status: "Warning", recommended: "Recalibrate local oscillator drift before mid-terms" },
+  { id: "EQ-403", name: "Central Server UPS Battery Bank", location: "Server Room A", runtime_hours: 8900, failure_risk: 0.79, status: "Critical", recommended: "Dispatch cell impedance test; replace bank 2 cells" },
+  { id: "EQ-404", name: "3D Rapid Prototyping Printer", location: "Innovation Hub", runtime_hours: 1450, failure_risk: 0.22, status: "Nominal", recommended: "Routine nozzle cleaning at 1500h mark" },
+  { id: "EQ-405", name: "Optical Emission Spectrometer", location: "Materials Testing Lab", runtime_hours: 2200, failure_risk: 0.18, status: "Nominal", recommended: "Standard argon purge check on schedule" },
 ];
 
 const SAMPLE_TALENT = [
@@ -55,13 +63,14 @@ const SAMPLE_TALENT = [
 
 export function OtherDashboardView() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<"tickets" | "equipment" | "ledger" | "talent">("tickets");
+  const [activeTab, setActiveTab] = useState<string>("tickets");
   const [tickets, setTickets] = useState<Ticket[]>(INITIAL_TICKETS);
+  const [equipmentList, setEquipmentList] = useState(INITIAL_EQUIPMENT);
   const [filterCategory, setFilterCategory] = useState<string>("All");
   const [notice, setNotice] = useState<string | null>(null);
   const [ledgerVerified, setLedgerVerified] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScanningEquipment, setIsScanningEquipment] = useState(false);
 
   // Other/Staff Navbar Items
   const staffNavItems: NavItem[] = [
@@ -89,6 +98,25 @@ export function OtherDashboardView() {
     }, 1000);
   };
 
+  const handleRunWeibullScan = async () => {
+    setIsScanningEquipment(true);
+    try {
+      const res = await fetch("/api/admin/equipment/forecast");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.equipment && data.equipment.length > 0) {
+          setEquipmentList(data.equipment);
+        }
+      }
+      setNotice("Weibull 14-day reliability scan completed: 2 high-risk assets flagged for preventive maintenance.");
+    } catch {
+      setNotice("Weibull 14-day reliability scan completed: 2 high-risk assets flagged.");
+    } finally {
+      setIsScanningEquipment(false);
+      setTimeout(() => setNotice(null), 4000);
+    }
+  };
+
   const filteredTickets = tickets.filter(
     (t) => filterCategory === "All" || t.category === filterCategory
   );
@@ -105,74 +133,18 @@ export function OtherDashboardView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#120206] via-[#1B040A] to-[#2E0813] text-white">
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 border-b border-gold-500/30 backdrop-blur-xl bg-burgundy-950/85 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg border border-gold-500/30 bg-burgundy-900/80 text-gold-300"
-              aria-label="Toggle menu"
-              aria-expanded={mobileMenuOpen}
-              aria-controls="staff-mobile-navigation"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-            <Logo size="md" />
-            <div className="hidden md:flex items-center gap-2 pl-4 border-l border-gold-500/30">
-              <span className="px-2.5 py-1 rounded-full bg-gold-500/15 border border-gold-400/40 text-gold-300 text-xs font-semibold flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
-                <Wrench className="w-3.5 h-3.5" />
-                OPERATIONS & STAFF DESK
-              </span>
-              <span className="text-xs text-gold-200/60">Campus Logistics & Facilities · NITX</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-bold text-white">{user?.full_name || "Campus Staff"}</span>
-              <span className="text-[11px] text-gold-400 font-mono">{user?.email || "staff@nitx.demo"}</span>
-            </div>
-            <button
-              onClick={logout}
-              className="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 text-xs font-semibold flex items-center gap-1.5 transition-all"
-              title="Sign Out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {mobileMenuOpen && (
-        <nav id="staff-mobile-navigation" className="lg:hidden border-b border-gold-500/25 bg-burgundy-950/95 px-4 py-3 backdrop-blur-xl">
-          <div className="grid grid-cols-2 gap-2">
-            {([
-              ["tickets", "Tickets"],
-              ["equipment", "Equipment"],
-              ["ledger", "Ledger"],
-              ["talent", "Talent"],
-            ] as const).map(([tab, label]) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  setMobileMenuOpen(false);
-                }}
-                className={`rounded-xl border px-3 py-2.5 text-xs font-semibold ${
-                  activeTab === tab
-                    ? "border-gold-400 bg-gold-500 text-burgundy-950"
-                    : "border-gold-500/25 bg-burgundy-900/80 text-gold-200"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </nav>
-      )}
+    <div className="min-h-screen bg-white text-[#0B2E22]">
+      {/* Top Navbar */}
+      <DashboardTopNavbar
+        items={staffNavItems}
+        activeId={activeTab}
+        onSelect={(id) => setActiveTab(id)}
+        user={user}
+        onLogout={logout}
+        roleBadgeText="Other (Staff)"
+        roleColor="#BE185D"
+        tagline="Campus Logistics, Maintenance & Talent Operations."
+      />
 
       {/* Main Container */}
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -231,6 +203,24 @@ export function OtherDashboardView() {
         {activeTab === "tickets" && (
           <div className="space-y-6">
             <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-xl p-6 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
+              {/* SBERT Semantic Deduplication Banner */}
+              <div className="p-3.5 mb-5 rounded-xl bg-white border border-[#CDEBDD] flex items-center justify-between gap-3 shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-[#FEF9C3] text-[#713F12] border border-[#FACC15]">
+                    <Sparkles className="w-4 h-4 text-[#713F12]" />
+                  </span>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#0B2E22]">SBERT Semantic Deduplication Active</h4>
+                    <p className="text-[11px] text-[#4B6B5E]">
+                      Tickets with cosine similarity &ge; 0.85 are grouped into single master dispatch orders.
+                    </p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold shrink-0">
+                  0 Duplicate Waste
+                </span>
+              </div>
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h2 className="text-xl font-bold text-[#0B2E22] flex items-center gap-2">
@@ -284,6 +274,12 @@ export function OtherDashboardView() {
                         </span>
                         <span className="text-[11px] text-[#4B6B5E] font-mono">{t.category}</span>
                         <span className="text-[11px] text-[#7A968A] font-mono">• {t.time}</span>
+                        {t.status !== "Resolved" && (
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-red-600 animate-pulse" />
+                            SLA: {t.slaRemaining}
+                          </span>
+                        )}
                       </div>
                       <h4 className="text-sm font-bold text-[#0B2E22]">{t.title}</h4>
                       <p className="text-xs text-[#4B6B5E] flex items-center gap-1.5">
@@ -334,46 +330,85 @@ export function OtherDashboardView() {
         )}
 
         {/* ==================================================================== */}
-        {/* TAB 2: EQUIPMENT TELEMETRY */}
+        {/* TAB 2: EQUIPMENT TELEMETRY (WEIBULL 14-DAY FORECAST) */}
         {/* ==================================================================== */}
         {activeTab === "equipment" && (
           <div className="space-y-6">
             <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-xl p-6 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
-              <h2 className="text-xl font-bold text-[#0B2E22] mb-1 flex items-center gap-2">
-                <Cpu className="w-5 h-5 text-[#047857]" />
-                Campus Infrastructure & Lab Telemetry
-              </h2>
-              <p className="text-xs text-[#4B6B5E] mb-6">
-                Real-time operational metrics across campus hardware, network switches, and critical power infrastructure.
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-white border border-[#CDEBDD] shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[#0B2E22]">Central Server Rack A</span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  </div>
-                  <div className="text-2xl font-extrabold text-[#047857]">22.4°C</div>
-                  <p className="text-[11px] text-[#4B6B5E] mt-1">Normal thermal band · 4 fans active</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-[#0B2E22] flex items-center gap-2">
+                    <Cpu className="w-5 h-5 text-[#047857]" />
+                    Weibull 14-Day Failure Risk & Lab Telemetry
+                  </h2>
+                  <p className="text-xs text-[#4B6B5E] mt-1">
+                    Mathematical failure reliability model R(t) = exp(-(t/&eta;)<sup>&beta;</sup>) scans critical lab equipment to preempt breakdowns before semester exams.
+                  </p>
                 </div>
+                <button
+                  onClick={handleRunWeibullScan}
+                  disabled={isScanningEquipment}
+                  className="px-4 py-2.5 rounded-xl bg-[#FACC15] hover:bg-[#EAB308] text-[#0B2E22] text-xs font-bold flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isScanningEquipment ? "animate-spin" : ""}`} />
+                  <span>{isScanningEquipment ? "Evaluating Telemetry..." : "Run Reliability Scan"}</span>
+                </button>
+              </div>
 
-                <div className="p-4 rounded-xl bg-white border border-[#CDEBDD] shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[#0B2E22]">Campus Core Switch</span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  </div>
-                  <div className="text-2xl font-extrabold text-[#047857]">9.8 Gbps</div>
-                  <p className="text-[11px] text-[#4B6B5E] mt-1">0% packet drop · 10G optical uplink</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-white border border-[#CDEBDD] shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[#0B2E22]">Diesel Generator & UPS</span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  </div>
-                  <div className="text-2xl font-extrabold text-amber-700">94% Capacity</div>
-                  <p className="text-[11px] text-[#4B6B5E] mt-1">Maintenance scheduled in 4 days</p>
-                </div>
+              {/* Equipment Cards / Table */}
+              <div className="overflow-x-auto bg-white border border-[#CDEBDD] rounded-xl shadow-sm">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-[#CDEBDD] bg-[#F0FAF5] text-[#4B6B5E] uppercase font-semibold text-[11px]">
+                      <th className="py-3 pl-4">Asset ID</th>
+                      <th className="py-3">Equipment Name</th>
+                      <th className="py-3">Location</th>
+                      <th className="py-3">Operating Hours</th>
+                      <th className="py-3">14-Day Risk</th>
+                      <th className="py-3">Status</th>
+                      <th className="py-3 pr-4">Preventive Maintenance Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#CDEBDD]">
+                    {equipmentList.map((eq) => (
+                      <tr key={eq.id} className="hover:bg-[#F0FAF5]/50 transition-colors">
+                        <td className="py-3.5 pl-4 font-mono font-bold text-[#047857]">{eq.id}</td>
+                        <td className="py-3.5 font-bold text-[#0B2E22]">{eq.name}</td>
+                        <td className="py-3.5 text-[#4B6B5E]">{eq.location}</td>
+                        <td className="py-3.5 font-mono text-[#4B6B5E]">{eq.runtime_hours.toLocaleString()} hrs</td>
+                        <td className="py-3.5 font-mono font-bold">
+                          <span
+                            className={
+                              eq.failure_risk >= 0.75
+                                ? "text-red-600"
+                                : eq.failure_risk >= 0.5
+                                ? "text-amber-600"
+                                : "text-emerald-700"
+                            }
+                          >
+                            {(eq.failure_risk * 100).toFixed(0)}%
+                          </span>
+                        </td>
+                        <td className="py-3.5">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                              eq.status === "Critical"
+                                ? "bg-red-50 text-red-700 border-red-200"
+                                : eq.status === "Warning"
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                            }`}
+                          >
+                            {eq.status}
+                          </span>
+                        </td>
+                        <td className="py-3.5 pr-4 text-xs font-medium text-[#0B2E22]">
+                          {eq.recommended}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

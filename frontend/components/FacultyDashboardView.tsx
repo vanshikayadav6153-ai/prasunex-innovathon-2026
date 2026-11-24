@@ -15,16 +15,12 @@ import {
   Layers,
   Brain,
   Sparkles,
-  LogOut,
-  ChevronRight,
+  Camera,
   Filter,
-  Search,
-  ArrowUpRight,
-  Menu,
-  X,
+  Check,
+  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { Logo } from "@/components/Logo";
 import { FreshRoleDashboard } from "@/components/FreshRoleDashboard";
 import { DashboardTopNavbar, NavItem } from "@/components/DashboardTopNavbar";
 import {
@@ -35,9 +31,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
-  Cell,
 } from "recharts";
 
 const SAMPLE_COURSES = [
@@ -54,11 +47,12 @@ const SAMPLE_AT_RISK_STUDENTS = [
 ];
 
 const SAMPLE_QUESTION_AUDIT = [
-  { id: "Q1", topic: "Red-Black Trees Deletion", difficulty: 0.82, discrimination: 0.44, status: "High Rigor (Good)", mastery: "64%" },
-  { id: "Q2", topic: "Virtual Memory Paging", difficulty: 0.65, discrimination: 0.51, status: "Optimal", mastery: "72%" },
-  { id: "Q3", topic: "Backpropagation Math", difficulty: 0.89, discrimination: 0.38, status: "Too Difficult (Review)", mastery: "48%" },
-  { id: "Q4", topic: "Dijkstra Shortest Path", difficulty: 0.42, discrimination: 0.49, status: "Optimal", mastery: "85%" },
-  { id: "Q5", topic: "Thread Deadlock Detection", difficulty: 0.74, discrimination: 0.46, status: "High Rigor", mastery: "61%" },
+  { id: "Q1", topic: "Red-Black Trees Deletion", difficulty: 0.82, discrimination: 0.44, bloom: "Apply", status: "Optimal (Good)", mastery: "64%" },
+  { id: "Q2", topic: "Virtual Memory Paging", difficulty: 0.65, discrimination: 0.51, bloom: "Understand", status: "Optimal", mastery: "72%" },
+  { id: "Q3", topic: "Backpropagation Math", difficulty: 0.89, discrimination: 0.38, bloom: "Analyze", status: "High Rigor", mastery: "48%" },
+  { id: "Q4", topic: "Dijkstra Shortest Path", difficulty: 0.42, discrimination: 0.49, bloom: "Apply", status: "Optimal", mastery: "85%" },
+  { id: "Q5", topic: "Thread Deadlock Detection", difficulty: 0.74, discrimination: 0.46, bloom: "Evaluate", status: "Optimal", mastery: "61%" },
+  { id: "Q6", topic: "Read-Committed Isolation Serialization", difficulty: 0.94, discrimination: -0.24, bloom: "Apply", status: "DEFECT (Negative r_pbis)", mastery: "22%" },
 ];
 
 export function FacultyDashboardView() {
@@ -67,8 +61,9 @@ export function FacultyDashboardView() {
   const [selectedCourse, setSelectedCourse] = useState("cs201");
   const [meanShift, setMeanShift] = useState(0);
   const [stdScale, setStdScale] = useState(1);
+  const [gapAwareActive, setGapAwareActive] = useState(false);
+  const [photoOcrModal, setPhotoOcrModal] = useState(false);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Faculty Navbar Items
   const facultyNavItems: NavItem[] = [
@@ -92,14 +87,22 @@ export function FacultyDashboardView() {
 
     return baseGrades.map((g, idx) => {
       let mod = g.count;
-      if (meanShift > 0 && idx < 3) mod += Math.round(meanShift * 1.5);
-      if (meanShift < 0 && idx > 3) mod += Math.round(Math.abs(meanShift) * 1.2);
-      if (stdScale > 1) {
-        if (idx === 0 || idx === 6) mod += 2;
+      if (gapAwareActive) {
+        // Gap aware shifts 14 boundary-trapped students into higher grades
+        if (idx === 1) mod += 6;
+        if (idx === 2) mod += 5;
+        if (idx === 3) mod += 3;
+        if (idx === 4) mod = Math.max(1, mod - 4);
+      } else {
+        if (meanShift > 0 && idx < 3) mod += Math.round(meanShift * 1.5);
+        if (meanShift < 0 && idx > 3) mod += Math.round(Math.abs(meanShift) * 1.2);
+        if (stdScale > 1) {
+          if (idx === 0 || idx === 6) mod += 2;
+        }
       }
       return { ...g, adjusted: Math.max(0, mod) };
     });
-  }, [meanShift, stdScale]);
+  }, [meanShift, stdScale, gapAwareActive]);
 
   const handleExport = (type: "pdf" | "csv") => {
     setExportNotice(`Exported ${type.toUpperCase()} Grade Ledger with NBA Attainment Signature!`);
@@ -118,74 +121,18 @@ export function FacultyDashboardView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#120206] via-[#1B040A] to-[#2E0813] text-white">
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 border-b border-gold-500/30 backdrop-blur-xl bg-burgundy-950/85 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg border border-gold-500/30 bg-burgundy-900/80 text-gold-300"
-              aria-label="Toggle menu"
-              aria-expanded={mobileMenuOpen}
-              aria-controls="faculty-mobile-navigation"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-            <Logo size="md" />
-            <div className="hidden md:flex items-center gap-2 pl-4 border-l border-gold-500/30">
-              <span className="px-2.5 py-1 rounded-full bg-gold-500/15 border border-gold-400/40 text-gold-300 text-xs font-semibold flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
-                <BookOpenCheck className="w-3.5 h-3.5" />
-                FACULTY PORTAL
-              </span>
-              <span className="text-xs text-gold-200/60">CSE Department · NITX</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-bold text-white">{user?.full_name || "Faculty Member"}</span>
-              <span className="text-[11px] text-gold-400 font-mono">{user?.email || "faculty@nitx.demo"}</span>
-            </div>
-            <button
-              onClick={logout}
-              className="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 text-xs font-semibold flex items-center gap-1.5 transition-all"
-              title="Sign Out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {mobileMenuOpen && (
-        <nav id="faculty-mobile-navigation" className="lg:hidden border-b border-gold-500/25 bg-burgundy-950/95 px-4 py-3 backdrop-blur-xl">
-          <div className="grid grid-cols-2 gap-2">
-            {([
-              ["overview", "Overview"],
-              ["grading", "Grading"],
-              ["attendance", "Attendance"],
-              ["audit", "Audit"],
-            ] as const).map(([tab, label]) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  setMobileMenuOpen(false);
-                }}
-                className={`rounded-xl border px-3 py-2.5 text-xs font-semibold ${
-                  activeTab === tab
-                    ? "border-gold-400 bg-gold-500 text-burgundy-950"
-                    : "border-gold-500/25 bg-burgundy-900/80 text-gold-200"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </nav>
-      )}
+    <div className="min-h-screen bg-white text-[#0B2E22] flex flex-col font-sans selection:bg-[#34D399]/30">
+      {/* Top Navbar */}
+      <DashboardTopNavbar
+        items={facultyNavItems}
+        activeId={activeTab}
+        onSelect={(id) => setActiveTab(id as any)}
+        user={user}
+        onLogout={logout}
+        roleBadgeText="Faculty"
+        roleColor="#1D4ED8"
+        tagline="Explain. Calibrate. Elevate academic outcomes."
+      />
 
       {/* Main Container */}
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -230,7 +177,7 @@ export function FacultyDashboardView() {
 
         {/* Notification Toast */}
         {exportNotice && (
-          <div className="p-3.5 rounded-xl bg-[#F0FAF5] border border-[#34D399] text-[#047857] text-xs flex items-center gap-2 shadow-sm animate-fadeIn">
+          <div className="p-3.5 rounded-xl bg-[#F0FAF5] border border-[#34D399] text-[#047857] text-xs flex items-center gap-2 shadow-sm">
             <CheckCircle2 className="w-4 h-4 text-[#047857] shrink-0" />
             <span className="font-semibold">{exportNotice}</span>
           </div>
@@ -253,18 +200,27 @@ export function FacultyDashboardView() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <select
-                    value={selectedCourse}
-                    onChange={(e) => setSelectedCourse(e.target.value)}
-                    className="bg-white border border-[#CDEBDD] rounded-xl px-3 py-2 text-xs text-[#0B2E22] focus:outline-none focus:border-[#34D399]"
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => setGapAwareActive(!gapAwareActive)}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 ${
+                      gapAwareActive
+                        ? "bg-[#34D399] text-[#0B2E22] border border-[#047857]"
+                        : "bg-white border border-[#CDEBDD] text-[#0B2E22] hover:border-[#34D399]"
+                    }`}
                   >
-                    {SAMPLE_COURSES.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.code}: {c.title}
-                      </option>
-                    ))}
-                  </select>
+                    <Sparkles className="w-3.5 h-3.5 text-[#EAB308]" />
+                    <span>{gapAwareActive ? "Gap-Aware Active (14 Rescued)" : "Enable Gap-Aware (GMM/DP)"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setPhotoOcrModal(true)}
+                    className="px-3 py-2 rounded-xl bg-white border border-[#CDEBDD] text-[#0B2E22] hover:border-[#34D399] text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-[#1D4ED8]" />
+                    <span>Photo OCR Ingest</span>
+                  </button>
+
                   <button
                     onClick={() => handleExport("pdf")}
                     className="px-3 py-2 rounded-xl bg-[#FACC15] text-[#0B2E22] hover:bg-[#EAB308] text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
@@ -272,15 +228,21 @@ export function FacultyDashboardView() {
                     <Download className="w-3.5 h-3.5" />
                     <span>Export PDF</span>
                   </button>
-                  <button
-                    onClick={() => handleExport("csv")}
-                    className="px-3 py-2 rounded-xl bg-white border border-[#CDEBDD] text-[#0B2E22] hover:border-[#34D399] text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>CSV</span>
-                  </button>
                 </div>
               </div>
+
+              {/* Gap-Aware Status Banner */}
+              {gapAwareActive && (
+                <div className="p-3.5 mb-6 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>
+                      <strong>Eq 4.3 Gap-Aware Cutoff Active:</strong> Cutoffs dropped to natural score boundaries. 14 students trapped in $[c - 1.0, c)$ have been promoted without grade inflation.
+                    </span>
+                  </div>
+                  <span className="font-mono font-bold text-emerald-700">Heartbreak Trapped: 0</span>
+                </div>
+              )}
 
               {/* Sliders Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 rounded-xl bg-white border border-[#CDEBDD] mb-6">
@@ -294,9 +256,10 @@ export function FacultyDashboardView() {
                     min="-5"
                     max="5"
                     step="0.5"
+                    disabled={gapAwareActive}
                     value={meanShift}
                     onChange={(e) => setMeanShift(parseFloat(e.target.value))}
-                    className="w-full accent-[#34D399] cursor-pointer"
+                    className="w-full accent-[#34D399] cursor-pointer disabled:opacity-50"
                   />
                   <span className="text-[10px] text-[#7A968A]">Compensates for high exam paper variance</span>
                 </div>
@@ -311,16 +274,17 @@ export function FacultyDashboardView() {
                     min="0.8"
                     max="1.3"
                     step="0.05"
+                    disabled={gapAwareActive}
                     value={stdScale}
                     onChange={(e) => setStdScale(parseFloat(e.target.value))}
-                    className="w-full accent-[#34D399] cursor-pointer"
+                    className="w-full accent-[#34D399] cursor-pointer disabled:opacity-50"
                   />
                   <span className="text-[10px] text-[#7A968A]">Widens or narrows Gaussian distribution tails</span>
                 </div>
               </div>
 
-              {/* Distribution Chart */}
-              <div className="h-64 w-full">
+              {/* Chart */}
+              <div className="h-64 w-full bg-white p-4 rounded-xl border border-[#CDEBDD]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={gradeDistribution}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#CDEBDD" />
@@ -328,104 +292,123 @@ export function FacultyDashboardView() {
                     <YAxis stroke="#4B6B5E" fontSize={11} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#FFFFFF",
-                        border: "1px solid #CDEBDD",
-                        borderRadius: "12px",
-                        fontSize: "12px",
+                        backgroundColor: "#F0FAF5",
+                        borderColor: "#CDEBDD",
+                        borderRadius: "8px",
                         color: "#0B2E22",
+                        fontSize: "12px",
                       }}
                     />
-                    <Bar dataKey="adjusted" name="Students in Band" fill="#34D399" radius={[6, 6, 0, 0]}>
-                      {gradeDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={index === 6 ? "#B91C1C" : index === 0 ? "#1D4ED8" : "#34D399"} />
-                      ))}
-                    </Bar>
+                    <Bar dataKey="adjusted" fill="#34D399" radius={[4, 4, 0, 0]} name="Students" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-
-              <div className="mt-4 pt-4 border-t border-[#CDEBDD] flex flex-wrap items-center justify-between gap-3 text-xs text-[#4B6B5E]">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#1D4ED8]" />
-                  <span>Blue: Outstanding (O)</span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#34D399] ml-2" />
-                  <span>Mint: Normal Band</span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#B91C1C] ml-2" />
-                  <span>Red: Remediate (F)</span>
-                </div>
-                <span className="font-mono text-[#047857] font-semibold">Cohort Size: 68 Enrolled</span>
-              </div>
             </div>
+
+            {/* Photo OCR Modal */}
+            {photoOcrModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                <div className="bg-white border border-[#CDEBDD] rounded-xl max-w-lg w-full p-6 space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between border-b border-[#CDEBDD] pb-3">
+                    <h3 className="text-base font-bold text-[#0B2E22] flex items-center gap-2">
+                      <Camera className="w-5 h-5 text-[#1D4ED8]" />
+                      Computer Vision Marks Ingestion Result
+                    </h3>
+                    <button
+                      onClick={() => setPhotoOcrModal(false)}
+                      className="text-xs text-[#4B6B5E] hover:text-[#0B2E22]"
+                    >
+                      ✕ Close
+                    </button>
+                  </div>
+
+                  <div className="p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs space-y-1">
+                    <span className="font-bold text-amber-900">⚠️ Row 3 Arithmetic Checksum Discrepancy Flagged:</span>
+                    <p className="text-amber-800">
+                      On student Rohan Patel (21CS044): Q1(7.5) + Q2(8.0) + Q3(12.0) + Q4(11.5) = <strong>39.0</strong>, but professor wrote <strong>36.0</strong> on physical paper sheet.
+                    </p>
+                    <p className="font-semibold text-[#047857]">Action: Verified via automatic recalculation before ledger commit.</p>
+                  </div>
+
+                  <div className="text-xs space-y-1 text-[#4B6B5E]">
+                    <p>• Homography 4-Point Warp: <strong>Success</strong></p>
+                    <p>• Mean OCR Confidence: <strong>96.4%</strong></p>
+                    <p>• Rows Extracted: <strong>10 Rows Verified</strong></p>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2 border-t border-[#CDEBDD]">
+                    <button
+                      onClick={() => {
+                        setPhotoOcrModal(false);
+                        setExportNotice("Photo OCR marks committed with corrected checksums!");
+                      }}
+                      className="px-4 py-2 rounded-lg bg-[#FACC15] hover:bg-[#EAB308] text-[#0B2E22] text-xs font-bold"
+                    >
+                      Confirm & Commit Marks
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* ==================================================================== */}
-        {/* TAB 2: ATTENDANCE EARLY WARNING FORECASTER */}
+        {/* TAB 2: AT-RISK FORECASTER */}
         {/* ==================================================================== */}
         {activeTab === "attendance" && (
           <div className="space-y-6">
-            <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-xl p-6 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-[#0B2E22] flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-amber-600" />
-                    75% Attendance Risk Radar & Early Warning
-                  </h2>
-                  <p className="text-xs text-[#4B6B5E] mt-1">
-                    AI forecast predicts end-of-semester attendance based on weekday historical patterns. Flags students before they cross the mandatory 75% cutoff.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="px-3 py-1.5 rounded-xl bg-[#FEF9C3] border border-[#FACC15] text-[#713F12] font-bold">
-                    Cutoff: 75.0%
-                  </span>
-                </div>
-              </div>
+            <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-xl p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
+              <h2 className="text-lg font-bold text-[#0B2E22] flex items-center gap-2 mb-1">
+                <Activity className="w-5 h-5 text-[#1D4ED8]" />
+                At-Risk Student Early Warning Radar (&lt; 75% Attendance)
+              </h2>
+              <p className="text-xs text-[#4B6B5E]">
+                Automated statistical projection identifies students heading toward examination debarment 3 weeks before finals.
+              </p>
+            </div>
 
-              {/* Table */}
-              <div className="overflow-x-auto bg-white border border-[#CDEBDD] rounded-xl">
+            <div className="bg-white border border-[#CDEBDD] rounded-xl overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-[#CDEBDD] bg-[#F0FAF5] text-[#4B6B5E] uppercase font-semibold text-[11px]">
-                      <th className="py-3 pl-3">Student Name</th>
-                      <th className="py-3">Roll No.</th>
-                      <th className="py-3">Course</th>
-                      <th className="py-3">Current Att.</th>
-                      <th className="py-3">Predicted Final</th>
-                      <th className="py-3">Risk Level</th>
-                      <th className="py-3">Recommended Intervention</th>
-                      <th className="py-3 pr-3 text-right">Action</th>
+                  <thead className="bg-[#F0FAF5] border-b border-[#CDEBDD] text-[#4B6B5E] font-bold">
+                    <tr>
+                      <th className="p-3.5">STUDENT NAME</th>
+                      <th className="p-3.5">ROLL NUMBER</th>
+                      <th className="p-3.5">COURSE</th>
+                      <th className="p-3.5">CURRENT ATTENDANCE</th>
+                      <th className="p-3.5">STATUS</th>
+                      <th className="p-3.5">RECOMMENDED ACTION</th>
+                      <th className="p-3.5">ACTION</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#CDEBDD]">
-                    {SAMPLE_AT_RISK_STUDENTS.map((s) => (
-                      <tr key={s.id} className="hover:bg-[#F0FAF5]/50 transition-colors">
-                        <td className="py-3.5 pl-3 font-semibold text-[#0B2E22]">{s.name}</td>
-                        <td className="py-3.5 font-mono text-[#4B6B5E]">{s.roll}</td>
-                        <td className="py-3.5 font-mono text-[#047857]">{s.course}</td>
-                        <td className="py-3.5 font-bold text-amber-700">{s.attendance}%</td>
-                        <td className="py-3.5 font-bold text-red-700">{s.predicted}%</td>
-                        <td className="py-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              s.status === "Critical"
-                                ? "bg-red-50 text-red-700 border border-red-200"
-                                : "bg-amber-50 text-amber-700 border border-amber-200"
-                            }`}
-                          >
-                            {s.status}
+                  <tbody className="divide-y divide-[#CDEBDD] text-[#0B2E22]">
+                    {SAMPLE_AT_RISK_STUDENTS.map((st) => (
+                      <tr key={st.id} className="hover:bg-[#F0FAF5]/50">
+                        <td className="p-3.5 font-bold">{st.name}</td>
+                        <td className="p-3.5 font-mono text-[#4B6B5E]">{st.roll}</td>
+                        <td className="p-3.5 font-semibold text-[#047857]">{st.course}</td>
+                        <td className="p-3.5">
+                          <span className={`font-bold ${st.attendance < 68 ? "text-red-600" : "text-amber-600"}`}>
+                            {st.attendance}%
                           </span>
                         </td>
-                        <td className="py-3.5 text-[#4B6B5E] text-[11px]">{s.recommended}</td>
-                        <td className="py-3.5 pr-3 text-right">
+                        <td className="p-3.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            st.status === "Critical"
+                              ? "bg-red-100 text-red-800 border border-red-300"
+                              : "bg-amber-100 text-amber-800 border border-amber-300"
+                          }`}>
+                            {st.status}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-[#4B6B5E]">{st.recommended}</td>
+                        <td className="p-3.5">
                           <button
-                            onClick={() => {
-                              setExportNotice(`Sent academic nudge to ${s.name} (${s.roll})`);
-                              setTimeout(() => setExportNotice(null), 3000);
-                            }}
-                            className="px-2.5 py-1 rounded-lg bg-[#FACC15] hover:bg-[#EAB308] text-[#0B2E22] text-[11px] font-bold transition-all shadow-sm"
+                            onClick={() => setExportNotice(`Dispatched formal intervention notice to ${st.name} (${st.roll})`)}
+                            className="px-2.5 py-1 rounded bg-[#FACC15] hover:bg-[#EAB308] text-[#0B2E22] text-[11px] font-bold"
                           >
-                            Notify
+                            Dispatch Notice
                           </button>
                         </td>
                       </tr>
@@ -438,61 +421,66 @@ export function FacultyDashboardView() {
         )}
 
         {/* ==================================================================== */}
-        {/* TAB 3: IRT QUESTION ITEM AUDIT */}
+        {/* TAB 3: ITEM ANALYSIS & NBA */}
         {/* ==================================================================== */}
         {activeTab === "audit" && (
           <div className="space-y-6">
-            <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-xl p-6 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-[#0B2E22] flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-[#1D4ED8]" />
-                    Item Response Theory (IRT) Exam Question Audit
-                  </h2>
-                  <p className="text-xs text-[#4B6B5E] mt-1">
-                    Evaluates question quality, difficulty curves, and discrimination parameters. Flags ambiguous questions that penalize top students.
-                  </p>
-                </div>
-              </div>
+            <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-xl p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
+              <h2 className="text-lg font-bold text-[#0B2E22] flex items-center gap-2 mb-1">
+                <Award className="w-5 h-5 text-[#1D4ED8]" />
+                Item Response Theory (IRT 2PL) & NBA Criterion 3 Audit
+              </h2>
+              <p className="text-xs text-[#4B6B5E]">
+                Evaluates question paper discrimination point-biserial (r_pbis) and verifies Higher-Order Thinking Skills (HOTS &ge; 40%).
+              </p>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {SAMPLE_QUESTION_AUDIT.map((q) => (
-                  <div key={q.id} className="p-4 rounded-xl bg-white border border-[#CDEBDD] flex flex-col justify-between shadow-sm">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="px-2 py-0.5 rounded bg-[#F0FAF5] text-[#047857] border border-[#CDEBDD] font-mono text-xs font-bold">
-                          {q.id}
+            {/* Negative Discrimination Alert */}
+            <div className="p-4 bg-red-50 border border-red-300 rounded-xl text-xs space-y-1 text-red-900">
+              <span className="font-bold flex items-center gap-1.5 text-red-800">
+                <AlertTriangle className="w-4 h-4 text-red-600" />
+                Defective Question Detected: Q6 (r_pbis = -0.24)
+              </span>
+              <p className="text-red-800">
+                Question 6 exhibits negative point-biserial discrimination. Top-performing students scored lower than low-ability students due to ambiguous phrasing on read-committed serialization.
+              </p>
+              <p className="font-bold text-red-900 mt-1">
+                System Recommendation: Drop Q6 and redistribute 10 marks across Q1 and Q4, or grant 10 grace marks.
+              </p>
+            </div>
+
+            {/* Questions Table */}
+            <div className="bg-white border border-[#CDEBDD] rounded-xl overflow-hidden shadow-sm">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#F0FAF5] border-b border-[#CDEBDD] text-[#4B6B5E] font-bold">
+                  <tr>
+                    <th className="p-3.5">QUESTION</th>
+                    <th className="p-3.5">TOPIC</th>
+                    <th className="p-3.5">BLOOM LEVEL</th>
+                    <th className="p-3.5">DISCRIMINATION (r_pbis)</th>
+                    <th className="p-3.5">STATUS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#CDEBDD] text-[#0B2E22]">
+                  {SAMPLE_QUESTION_AUDIT.map((q) => (
+                    <tr key={q.id} className={q.discrimination < 0 ? "bg-red-50/50" : ""}>
+                      <td className="p-3.5 font-mono font-bold text-[#1D4ED8]">{q.id}</td>
+                      <td className="p-3.5 font-bold">{q.topic}</td>
+                      <td className="p-3.5">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FEF9C3] text-[#713F12]">
+                          {q.bloom}
                         </span>
-                        <span className="text-xs text-[#4B6B5E] font-mono">Mastery: {q.mastery}</span>
-                      </div>
-                      <h3 className="text-sm font-bold text-[#0B2E22] mb-2">{q.topic}</h3>
-                      <div className="space-y-1 text-xs text-[#4B6B5E]">
-                        <div className="flex justify-between">
-                          <span>Difficulty (b):</span>
-                          <span className="font-mono text-[#0B2E22] font-semibold">{q.difficulty}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Discrimination (a):</span>
-                          <span className="font-mono text-[#0B2E22] font-semibold">{q.discrimination}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-[#CDEBDD] flex items-center justify-between">
-                      <span className="text-[11px] text-[#047857] font-semibold">{q.status}</span>
-                      <button
-                        onClick={() => {
-                          setExportNotice(`Calibrating item parameters for ${q.id}...`);
-                          setTimeout(() => setExportNotice(null), 2500);
-                        }}
-                        className="text-[11px] font-bold text-[#1D4ED8] hover:underline flex items-center gap-1"
-                      >
-                        <span>Audit</span>
-                        <ArrowUpRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      </td>
+                      <td className="p-3.5 font-mono font-bold">
+                        <span className={q.discrimination < 0 ? "text-red-600 font-extrabold" : "text-[#047857]"}>
+                          {q.discrimination.toFixed(2)}
+                        </span>
+                      </td>
+                      <td className="p-3.5 font-medium">{q.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -502,30 +490,28 @@ export function FacultyDashboardView() {
         {/* ==================================================================== */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-xl p-6 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
-              <h2 className="text-xl font-bold text-[#0B2E22] flex items-center gap-2 mb-2">
+            <div className="bg-[#F0FAF5] border border-[#CDEBDD] rounded-xl p-5 shadow-[0_1px_2px_rgba(11,46,34,0.06)]">
+              <h2 className="text-lg font-bold text-[#0B2E22] flex items-center gap-2 mb-1">
                 <BarChart3 className="w-5 h-5 text-[#1D4ED8]" />
-                CSE Department Academic Velocity
+                Computer Science & Engineering Department Overview
               </h2>
-              <p className="text-xs text-[#4B6B5E] mb-6">
-                Active course progression, attendance health, and grading compliance across all section cohorts.
+              <p className="text-xs text-[#4B6B5E]">
+                Northstar Institute of Technology · Autonomous Tier · 2026 Academic Session
               </p>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {SAMPLE_COURSES.map((course) => (
-                  <div key={course.id} className="p-4 bg-white border border-[#CDEBDD] rounded-xl shadow-sm space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-[#1D4ED8]">{course.code}</span>
-                      <span className="text-xs font-bold text-[#047857]">{course.passRate}% Pass Rate</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-[#0B2E22]">{course.title}</h3>
-                    <div className="flex items-center justify-between text-xs text-[#4B6B5E] pt-2 border-t border-[#CDEBDD]">
-                      <span>{course.enrolled} Students</span>
-                      <span>Avg Score: {course.avgScore}%</span>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {SAMPLE_COURSES.map((c) => (
+                <div key={c.id} className="p-5 bg-white border border-[#CDEBDD] rounded-xl space-y-2 shadow-sm">
+                  <span className="font-mono text-xs font-bold text-[#1D4ED8]">{c.code}</span>
+                  <h3 className="text-sm font-bold text-[#0B2E22]">{c.title}</h3>
+                  <div className="pt-2 border-t border-[#CDEBDD] text-xs text-[#4B6B5E] space-y-1">
+                    <p>• Enrolled Students: <strong>{c.enrolled}</strong></p>
+                    <p>• Average Score: <strong>{c.avgScore}%</strong></p>
+                    <p>• Projected Pass Rate: <strong>{c.passRate}%</strong></p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

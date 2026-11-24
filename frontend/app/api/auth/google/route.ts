@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ detail: "Google returned an invalid or expired sign-in." }, { status: 401 });
   }
 
-  let user = findUserByEmail(tokenInfo.email);
+  let user = await findUserByEmail(tokenInfo.email);
   let accountCreated = false;
 
   if (!user) {
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       is_new_account: true,
     };
 
-    addUser(newUser);
+    await addUser(newUser);
     user = newUser;
     accountCreated = true;
   }

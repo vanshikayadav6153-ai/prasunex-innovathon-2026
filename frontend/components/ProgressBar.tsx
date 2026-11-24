@@ -1,5 +1,5 @@
 interface ProgressBarProps {
-  label: string;
+  label?: string;
   value: number;
   color?: "green" | "amber" | "red";
   code?: string;
